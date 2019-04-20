@@ -12,6 +12,16 @@ Description: This package implements mixed models for family-based genetic
     quickly and allow a wider variety of likelihood based inferential
     procedures.
 License: MIT + file LICENSE
+Depends:
+    R (>= 3.5.0)
+Imports:
+    R6 (>= 2.2.2),
+    data.table (>= 1.12.2),
+    TMB (>= 1.7.15),
+    kinship2 (>= 1.6.4)
+LinkingTo:
+    TMB (>= 1.7.15),
+    RcppEigen (>= 0.3.3.5)
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 6.1.1
