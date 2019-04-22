@@ -258,11 +258,15 @@ FamData <- R6Class(
         private$phi <-
           kinship2::kinship(private$ped_list, chrtype = "autosome")
         # Data set and kinship matrix constructor -----------------------------
-      } else if (setequal(names(args), c("family_id", "indiv_id", "phi"))) {
+      } else if (
+          setequal(names(args),
+          c("family_id", "indiv_id", "proband", "phi"))
+        ) {
         # Create variable name map
         private$var_map <- c(
           fmid = deparse(args$family_id),
-          id = deparse(args$indiv_id)
+          id = deparse(args$indiv_id),
+          pr = deparse(args$proband)
         )
         # Populate data member and rename to standard variable names for use
         # within FamData object. DO NOT SORT YET!
@@ -287,14 +291,14 @@ FamData <- R6Class(
             "indiv_id column contains improperly formatted data. See ?FamData."
           )
         }
-        if (!is.numeric(data_tmp$pr) |
-          !setequal(unique(data_tmp$pr), c(0, 1))) {
+        if (!is.numeric(private$data$pr) |
+          !setequal(unique(private$data$pr), c(0, 1))) {
           stop(
             "proband column contains improperly formatted data. See ?FamData."
           )
         }
         # Cast kinship matrix argument to appropriate type
-        phi <- as(eval(args$phi), "dsCMatrix")
+        phi <- as(eval(args$phi), "symmetricMatrix")
         # Get "fmid/id" in original sort order from data member
         ids <- private$data[, paste(fmid, id, sep = "/")]
         # Make "fmid/id" the row and column names of kinship matrix
