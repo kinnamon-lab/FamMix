@@ -220,7 +220,7 @@ FamData <- R6Class(
               code = 1
             ),
             keyby = .(fmid, mzid)
-          ][id2 > id1]
+          ][id2 > id1][, mzid := NULL]
         }
         if (private$data[, any(!is.na(dzid))]) {
           rel <- rbind(
@@ -236,7 +236,7 @@ FamData <- R6Class(
                 code = 2
               ),
               keyby = .(fmid, dzid)
-            ][id2 > id1]
+            ][id2 > id1][, dzid := NULL]
           )
         }
         if (!is.null(rel)) {
@@ -339,7 +339,7 @@ FamData <- R6Class(
       names(parm_lower) <- names(parm_upper) <- names(objfun$par)
       parm_lower["h2_g"] <- 0
       parm_upper["h2_g"] <- 1
-      parm_lower["sigma2"] <- 0
+      parm_lower["sigma2"] <- sqrt(.Machine$double.eps)
       optres <- nlminb(
         objfun$par,
         objfun$fn,
@@ -403,6 +403,7 @@ FamData <- R6Class(
       lrts <- cbind(lr_converge, lr_X2, lr_p)
       dimnames(lrts) <- list("h2_g = 0", c("converge", "X2", "Pr(>X2)"))
       res <- list(
+        f_sizes = mod_data$f_sizes,
         converge = optres$convergence,
         message = optres$message,
         max_grad = max(report$gradient.fixed),
@@ -449,15 +450,6 @@ FamData <- R6Class(
         unique(private$data$fmid),
         intersect(fam_w_proband, fam_w_rels)
       )
-      if (length(excl_fam) > 0) {
-        cat(
-          "The following families had no proband or no relatives for outcome",
-          formula[[2]],
-          "and were excluded:",
-          excl_fam,
-          "\n"
-        )
-      }
       incl <- intersect(
         non_na,
         which(private$data$fmid %in% intersect(fam_w_proband, fam_w_rels))
@@ -472,13 +464,16 @@ FamData <- R6Class(
       probands <- which(mf$`(proband)` == 1)
       y <- as.numeric(model.response(mf))
       X <- model.matrix(formula, mf)
+      f_sum <- private$data[incl, .N, keyby = fmid]
+      f_sizes <- f_sum$N
+      names(f_sizes) <- f_sum$fmid
       list(
         y = y,
         X = X,
         y_pr = y[probands],
         X_pr = X[probands, ],
         phi = private$phi[incl, incl],
-        f_sizes = private$data[incl, .N, keyby = fmid]$N,
+        f_sizes = f_sizes,
         incl = incl
       )
     }
