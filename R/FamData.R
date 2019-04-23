@@ -22,34 +22,39 @@
 #'
 #' @section Arguments:
 #' \strong{Constructors}
+#'
+#' All constructor arguments other than \code{data} \emph{must be named}.
 #' \describe{
 #'   \item{\code{data}}{A \code{data.frame} or \code{data.table}
 #'     containing all phenotypes and genetic variables of interest.}
-#'   \item{\code{family_id}}{The name of a numeric or character column in
-#'     \code{data} containing a family identifier.}
-#'   \item{\code{indiv_id}}{The name of a numeric or character column in
-#'      \code{data} containing a individual identifier.}
-#'   \item{\code{proband}}{The name of a numeric column in \code{data}
-#'     containing 1 for probands and 0 otherwise. \code{NA} is not permitted.}
-#'   \item{\code{sex}}{The name of a numeric column in \code{data} containing
-#'     the individual's sex (1 = "male", 2 = "female") or \code{NA} if
-#'     unknown.}
-#'   \item{\code{maternal_id}}{The name of a column in \code{data}
-#'     of the same type as \code{indiv_id} containing the \code{indiv_id} of
-#'     the individual's mother or 0 (numeric), "" (character), or \code{NA} if
-#'     a founder. See documentation for \code{\link[kinship2]{pedigree}}.}
-#'   \item{\code{paternal_id}}{The name of a column in \code{data}
-#'     of the same type as \code{indiv_id} containing the \code{indiv_id} of
-#'     the individual's father or or 0 (numeric), "" (character), or \code{NA}
-#'     if a founder. See documentation for \code{\link[kinship2]{pedigree}}.}
-#'   \item{\code{mzgrp}}{The name of a numeric, character, or factor column in
-#'     \code{data} containing the same value for all members of a monozygotic
-#'     twin group. \code{NA} should be used for all individuals who are not
-#'     monozygotic twins.}
-#'   \item{\code{dzgrp}}{The name of a numeric, character, or factor column in
-#'     \code{data} containing the same value for all members of a dizygotic
-#'     twin group. \code{NA} should be used for all individuals who are not
-#'     dizygotic twins.}
+#'   \item{\code{family_id}}{Character string containing the name of a numeric
+#'     or character column in \code{data} containing a family identifier.}
+#'   \item{\code{indiv_id}}{Character string containing the name of a numeric or
+#'       character column in \code{data} containing a individual identifier.}
+#'   \item{\code{proband}}{Character string containing the name of a numeric
+#'     column in \code{data} containing 1 for probands and 0 otherwise.
+#'     \code{NA} is not permitted.}
+#'   \item{\code{sex}}{Character string containing the name of a numeric column
+#'     in \code{data} containing the individual's sex (1 = "male", 2 = "female")
+#'     or \code{NA} if unknown.}
+#'   \item{\code{maternal_id}}{Character string containing the name of a column
+#'     in \code{data} of the same type as \code{indiv_id} containing the
+#'     \code{indiv_id} of the individual's mother or 0 (numeric),
+#'     "" (character), or \code{NA} if a founder. See documentation for
+#'     \code{\link[kinship2]{pedigree}}.}
+#'   \item{\code{paternal_id}}{Character string containing the name of a column
+#'     in \code{data} of the same type as \code{indiv_id} containing the
+#'     \code{indiv_id} of the individual's father or or 0 (numeric),
+#'     "" (character), or \code{NA} if a founder. See documentation for
+#'     \code{\link[kinship2]{pedigree}}.}
+#'   \item{\code{mzgrp}}{Character string containing the name of a numeric,
+#'     character, or factor column in \code{data} containing the same value for
+#'     all members of a monozygotic twin group. \code{NA} should be used for all
+#'     individuals who are not monozygotic twins.}
+#'   \item{\code{dzgrp}}{Character string containing the name of a numeric,
+#'     character, or factor column in \code{data} containing the same value for
+#'     all members of a dizygotic twin group. \code{NA} should be used for all
+#'     individuals who are not dizygotic twins.}
 #'   \item{\code{phi}}{A matrix coercible to a
 #'     \code{\link[Matrix:dsCMatrix-class]{dsCMatrix}} containing the
 #'     pairwise kinship coefficients for individuals. Note that
@@ -130,7 +135,7 @@ FamData <- R6Class(
     # Constructor =============================================================
     initialize = function(data, ...) {
       data_name <- deparse(substitute(data))
-      args <- eval(substitute(alist(...)))
+      args <- list(...)
       # Pedigree data constructor ---------------------------------------------
       if (setequal(
         names(args),
@@ -147,14 +152,14 @@ FamData <- R6Class(
       )) {
         # Create variable name map
         private$var_map <- c(
-          fmid = deparse(args$family_id),
-          id = deparse(args$indiv_id),
-          mid = deparse(args$maternal_id),
-          pid = deparse(args$paternal_id),
-          sex = deparse(args$sex),
-          pr = deparse(args$proband),
-          mzid = deparse(args$mzgrp),
-          dzid = deparse(args$dzgrp)
+          fmid = args$family_id,
+          id = args$indiv_id,
+          mid = args$maternal_id,
+          pid = args$paternal_id,
+          sex = args$sex,
+          pr = args$proband,
+          mzid = args$mzgrp,
+          dzid = args$dzgrp
         )
         # Populate data member, rename to standard variable names for use
         # within FamData object, and sort by fmid, then id
@@ -264,9 +269,9 @@ FamData <- R6Class(
         ) {
         # Create variable name map
         private$var_map <- c(
-          fmid = deparse(args$family_id),
-          id = deparse(args$indiv_id),
-          pr = deparse(args$proband)
+          fmid = args$family_id,
+          id = args$indiv_id,
+          pr = args$proband
         )
         # Populate data member and rename to standard variable names for use
         # within FamData object. DO NOT SORT YET!
@@ -298,7 +303,7 @@ FamData <- R6Class(
           )
         }
         # Cast kinship matrix argument to appropriate type
-        phi <- as(eval(args$phi), "symmetricMatrix")
+        phi <- as(args$phi, "symmetricMatrix")
         # Get "fmid/id" in original sort order from data member
         ids <- private$data[, paste(fmid, id, sep = "/")]
         # Make "fmid/id" the row and column names of kinship matrix

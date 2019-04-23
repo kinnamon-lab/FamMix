@@ -18,12 +18,12 @@ Type objective_function<Type>::operator() ()
   // Loglikelihood for families
   // Center Y so that it has a mean of zero
   vector<Type> y_cent = y - X * betas;
-  Eigen::SparseMatrix<Type> Sigma = Type(2.0) * phi * h2_g * sigma2;
-  Sigma.diagonal().setConstant(sigma2);
   Type ll = Type(0);
   int fidx = 0;
   for (int i = 0; i < f_sizes.size(); i++) {
-    matrix<Type> Sigma_fam = Sigma.block(fidx, fidx, f_sizes(i), f_sizes(i));
+    matrix<Type> Sigma_fam = Type(2.0) * h2_g * sigma2 *
+      phi.block(fidx, fidx, f_sizes(i), f_sizes(i));
+    Sigma_fam.diagonal().setConstant(sigma2);
     // MVNORM returns -log density for multivariate normal with mean zero and
     // covariance matrix Sigma_fam evaluated at y_cent for this family
     ll -= MVNORM(Sigma_fam)(y_cent.segment(fidx, f_sizes(i)));
