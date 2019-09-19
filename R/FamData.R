@@ -187,12 +187,14 @@ FamData <- R6Class(
         }
         if (class(private$data$mid) != class(private$data$id)) {
           stop(
-            "maternal_id column contains improperly formatted data. See ?FamData."
+            "maternal_id column contains improperly formatted data. ",
+            "See ?FamData."
           )
         }
         if (class(private$data$pid) != class(private$data$id)) {
           stop(
-            "paternal_id column contains improperly formatted data. See ?FamData."
+            "paternal_id column contains improperly formatted data. ",
+            "See ?FamData."
           )
         }
         if (
@@ -332,7 +334,7 @@ FamData <- R6Class(
       parameters <- list(
         betas = coef(init_fits),
         h2_g = 0,
-        sigma2 = summary(init_fits)$sigma^2
+        sigma2 = summary(init_fits)$sigma ^ 2
       )
       objfun <- TMB::MakeADFun(
         mod_data,
@@ -349,6 +351,22 @@ FamData <- R6Class(
       parm_lower["h2_g"] <- 0
       parm_upper["h2_g"] <- 1
       parm_lower["sigma2"] <- sqrt(.Machine$double.eps)
+      # Transform problem by scaling parameters by square root of their Hessian
+      # diagonal elements at the initial estimates, which should improve
+      # conditioning of the Hessian and therefore numerical convergence. This
+      # is a non-adaptive version of the adaptive scaling for unconstrained
+      # optimization in section 4c of the PORT documentation included in the
+      # references for nlminb.
+      d <- sqrt(abs(diag(objfun$he())))
+      if (!all(is.finite(d))) {
+        # If there are any -Inf, Inf, NA, or NaN values, do not scale
+        d <- rep_len(1, length(d))
+      } else {
+        # Otherwise, set any scaling factors that are numerically <= 0 to the
+        # minimum of those that are numerically > 0
+        d[d < sqrt(.Machine$double.eps)] <-
+          min(d[d >= sqrt(.Machine$double.eps)])
+      }
       optres <- nlminb(
         objfun$par,
         objfun$fn,
@@ -356,6 +374,7 @@ FamData <- R6Class(
         objfun$he,
         lower = parm_lower,
         upper = parm_upper,
+        scale = d,
         ...
       )
       objfun_h2_g_zero <- TMB::MakeADFun(
@@ -366,6 +385,13 @@ FamData <- R6Class(
         method = NULL,
         silent = TRUE
       )
+      d_h2_g_zero <- sqrt(abs(diag(objfun_h2_g_zero$he())))
+      if (!all(is.finite(d_h2_g_zero))) {
+        d_h2_g_zero <- rep_len(1, length(d_h2_g_zero))
+      } else {
+        d_h2_g_zero[d_h2_g_zero < sqrt(.Machine$double.eps)] <-
+          min(d_h2_g_zero[d_h2_g_zero >= sqrt(.Machine$double.eps)])
+      }
       optres_h2_g_zero <- nlminb(
         objfun_h2_g_zero$par,
         objfun_h2_g_zero$fn,
@@ -373,6 +399,7 @@ FamData <- R6Class(
         objfun_h2_g_zero$he,
         lower = parm_lower[!names(parm_lower) %in% "h2_g"],
         upper = parm_upper[!names(parm_upper) %in% "h2_g"],
+        scale = d_h2_g_zero,
         ...
       )
       report <- TMB::sdreport(objfun)
