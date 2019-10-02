@@ -125,11 +125,15 @@
 #' @docType class
 #' @name FamData-class
 #' @aliases FamData
+#' @importFrom kinship2 pedigree
+#' @importFrom TMB MakeADFun
 NULL
 
 #' @export
 FamData <- R6Class(
   classname = "FamData",
+  parent_env = getNamespace("FamMix"),
+  lock_class = TRUE,
   # Public members ============================================================
   public = list(
     # Constructor =============================================================
@@ -246,21 +250,23 @@ FamData <- R6Class(
             ][id2 > id1][, dzid := NULL]
           )
         }
-        if (!is.null(rel)) {
-          setnames(rel, old = "fmid", new = "famid")
-        }
         # Create pedigreeList
-        private$ped_list <- with(
+        ped_args <- with(
           private$data,
-          kinship2::pedigree(
+          list(
             id = id,
             dadid = pid,
             momid = mid,
             sex = ifelse(is.na(sex), 3, sex),
-            famid = fmid,
-            relation = rel
+            famid = fmid
           )
         )
+        if (!is.null(rel)) {
+          setnames(rel, old = "fmid", new = "famid")
+          ped_args$relation <- rel
+        }
+        private$ped_list <-
+          do.call(get("pedigree", getNamespace("kinship2")), ped_args)
         # Calculate autosomal kinship matrix
         private$phi <-
           kinship2::kinship(private$ped_list, chrtype = "autosome")

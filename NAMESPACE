@@ -3,4 +3,6 @@
 export(FamData)
 import(data.table)
 importFrom(R6,R6Class)
+importFrom(TMB,MakeADFun)
+importFrom(kinship2,pedigree)
 useDynLib(sing_asc_lmm)
