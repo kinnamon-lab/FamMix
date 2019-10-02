@@ -12,5 +12,5 @@ lmna_nonseg <-
 # Fix reversed paternal and maternal ID
 lmna_nonseg[family_ID == "O" &
   individual_ID == 10, `:=`(maternal_ID = 7, paternal_ID = 8)]
-lmna_nonseg[, `:=`(mzpair = NA, dzpair = NA)]
+lmna_nonseg[, `:=`(mzpair = NA_integer_, dzpair = NA_integer_)]
 usethis::use_data(lmna_nonseg, overwrite = TRUE)

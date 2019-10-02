@@ -1,7 +1,7 @@
 Package: FamMix
 Type: Package
 Title: Mixed Models for Family-Based Genetic Studies
-Version: 0.1.3
+Version: 0.1.3.9000
 Authors@R: person("Daniel D.", "Kinnamon",
     email = "Daniel.Kinnamon@osumc.edu",
     role = c("aut", "cre"))
