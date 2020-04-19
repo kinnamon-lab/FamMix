@@ -1,9 +1,9 @@
 # FamData.R - Definition for FamData R6 class and methods
 
-#' Family data for mixed modeling
+#' Family data for modeling
 #'
 #' A \code{R6} class that stores family data and a kinship matrix. Methods of
-#' this class can then be used to fit genetic mixed models.
+#' this class can then be used to fit models such as genetic mixed models.
 #'
 #' @section Usage:
 #' \strong{Constructors}
@@ -132,7 +132,7 @@ NULL
 #' @export
 FamData <- R6Class(
   classname = "FamData",
-  parent_env = getNamespace("FamMix"),
+  parent_env = getNamespace("FamModel"),
   lock_class = TRUE,
   # Public members ============================================================
   public = list(

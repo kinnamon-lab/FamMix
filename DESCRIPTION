@@ -1,16 +1,16 @@
-Package: FamMix
+Package: FamModel
 Type: Package
-Title: Mixed Models for Family-Based Genetic Studies
+Title: Regression Modeling for Family-Based Genetic Studies
 Version: 0.1.3.9000
 Authors@R: person("Daniel D.", "Kinnamon",
     email = "Daniel.Kinnamon@osumc.edu",
     role = c("aut", "cre"))
-Description: This package implements mixed models for family-based genetic
-    studies. While such models can be fit with other existing software, this
-    package tries to provide a unified solution in the R environment. It also
-    leverages modern automatic differentiation techniques to fit models
-    quickly and allow a wider variety of likelihood based inferential
-    procedures.
+Description: This package implements regression models for family-based genetic
+    studies, including mixed models. While such models can be fit with other
+    existing software, this package tries to provide a unified solution in the
+    R environment. It also leverages modern automatic differentiation techniques
+    to fit model quickly and allow a wider variety of likelihood based
+    inferential procedures.
 License: MIT + file LICENSE
 Depends:
     R (>= 3.5.0)
@@ -24,4 +24,4 @@ LinkingTo:
     RcppEigen (>= 0.3.3.5)
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 6.1.1
+RoxygenNote: 7.0.2
