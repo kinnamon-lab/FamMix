@@ -1,7 +1,7 @@
 Package: FamModel
 Type: Package
 Title: Regression Modeling for Family-Based Genetic Studies
-Version: 0.1.3.9000
+Version: 0.2.0
 Authors@R: person("Daniel D.", "Kinnamon",
     email = "Daniel.Kinnamon@osumc.edu",
     role = c("aut", "cre"))
@@ -15,13 +15,13 @@ License: MIT + file LICENSE
 Depends:
     R (>= 3.5.0)
 Imports:
-    R6 (>= 2.2.2),
-    data.table (>= 1.12.2),
-    TMB (>= 1.7.15),
-    kinship2 (>= 1.6.4)
+    R6 (>= 2.4.1),
+    data.table (>= 1.12.8),
+    TMB (>= 1.7.16),
+    kinship2 (>= 1.8.5)
 LinkingTo:
-    TMB (>= 1.7.15),
-    RcppEigen (>= 0.3.3.5)
+    TMB (>= 1.7.16),
+    RcppEigen (>= 0.3.3.7)
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.0.2

@@ -1,0 +1,107 @@
+# util.R - Utility functions for use with FamModel package
+
+#' Make coefficient matrix
+#'
+#' Make coefficient matrix containing estimates, standard errors, 100*(1 -
+#' alpha)\% CIs, Z statistics, and p-values given an input vector of parameter
+#' estimates and their standard errors.
+#'
+#' @param theta_hat A named vector of parameter estimates.
+#' @param V_theta_hat The covariance matrix of the parameter estimates in
+#'   \code{theta_hat}.
+#' @param trans A function accepting a single argument (e.g., \code{exp}) that
+#'   is used to transform parameter estimates and confidence intervals. All
+#'   tests and standard errors are still on the untransformed scale.
+#' @param alpha The alpha level for the confidence intervals; default 0.05.
+#' @param SEs \code{TRUE} (default) if standard errors should be reported.
+#' @param CIs \code{TRUE} (default) if 100*(1 - alpha)\% CIs should be reported.
+#' @param tests \code{TRUE} (default) if Wald test statistics and p-values based
+#'   on the normal distribution should be reported.
+#'
+#' @return A \code{matrix} with row names given by the names of \code{theta_hat}
+#'   containing the requested columns.
+#'
+#' @export
+make_coef_mat <- function(theta_hat, V_theta_hat, trans, alpha = 0.05,
+  SEs = TRUE, CIs = TRUE, tests = TRUE) {
+  cl <- 100 * (1 - alpha)
+  se_theta_hat <- sqrt(diag(V_theta_hat))
+  trans_suff <- ""
+  if (tests) Z <- theta_hat / se_theta_hat
+  if (CIs) {
+    lcl_theta <- theta_hat - se_theta_hat * stats::qnorm(1 - alpha / 2)
+    ucl_theta <- theta_hat + se_theta_hat * stats::qnorm(1 - alpha / 2)
+  }
+  if (!missing(trans) && is.function(trans) &&
+    length(formals(trans)) == 1) {
+    trans_suff <- " (tr)"
+    theta_hat <- trans(theta_hat)
+    if (CIs) {
+      lcl_theta <- trans(lcl_theta)
+      ucl_theta <- trans(ucl_theta)
+    }
+  }
+  coef_mat <- theta_hat
+  header <- paste0("Estimate", trans_suff)
+  if (SEs) {
+    coef_mat <- cbind(coef_mat, se_theta_hat)
+    header <- c(header, "SE")
+  }
+  if (CIs) {
+    coef_mat <- cbind(coef_mat, lcl_theta, ucl_theta)
+    header <- c(header, paste0(cl, "% LCL", trans_suff),
+      paste0(cl, "% UCL", trans_suff))
+  }
+  if (tests) {
+    coef_mat <- cbind(
+      coef_mat, Z, stats::pchisq(Z ^ 2, df = 1, lower.tail = FALSE)
+    )
+    header <- c(header, "Z value", "Pr(>|Z|)")
+  }
+  colnames(coef_mat) <- header
+
+  coef_mat
+}
+
+#' Print parameter estimates
+#'
+#' Prints estimates, standard errors, 100*(1 - alpha)\% CIs, test statistics,
+#' and p-values to the console given a vector of estimates and their covariance
+#' matrix. May also specify a function to transform the estimates and 95% CIs.
+#' Uses \code{\link{make_coef_mat}} for underlying calculations.
+#'
+#' @param theta_hat A named vector of parameter estimates.
+#' @param V_theta_hat The covariance matrix of the parameter estimates in
+#'   \code{theta_hat}.
+#' @param trans A function accepting a single argument (e.g., \code{exp}) that
+#'   is used to transform parameter estimates and confidence intervals. All
+#'   tests and standard errors are still on the untransformed scale.
+#' @inheritDotParams make_coef_mat
+#' @inheritDotParams stats::printCoefmat -x -cs.ind -tst.ind
+#'
+#' @export
+print_ests <- function(theta_hat, V_theta_hat, trans, ...) {
+  make_coef_mat_args <- list(
+    quote(theta_hat), quote(V_theta_hat), quote(trans)
+  )
+  dots <- list(...)
+  make_coef_mat_args <- c(
+    make_coef_mat_args, dots[names(dots) %in% names(formals(make_coef_mat))]
+  )
+  coef_mat <- do.call(make_coef_mat, make_coef_mat_args)
+  printCoefmat_args <- list(quote(coef_mat))
+  if (!"Z value" %in% colnames(coef_mat)) {
+    printCoefmat_args$cs.ind <- 1:ncol(coef_mat)
+    printCoefmat_args$tst.ind <- integer(0)
+  }
+  printCoefmat_args <- c(
+    printCoefmat_args,
+    dots[names(dots) %in% names(formals(stats::printCoefmat))]
+  )
+  cat("\nParameter Estimates\n")
+  cat("-------------------\n")
+  if (!missing(trans) && is.function(trans) && length(formals(trans)) == 1) {
+    cat("Transformation:", deparse(trans)[-1], "\n")
+  }
+  do.call(stats::printCoefmat, printCoefmat_args)
+}
