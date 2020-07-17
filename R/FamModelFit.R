@@ -4,7 +4,8 @@
 #'
 #' @description An abstract R6 class defining the pattern for all
 #'   \code{\link{FamModelFit}} subclasses created by fitting a model to a
-#'   \code{\link{FamData}} object using one of its model-fitting methods.
+#'   \code{\link{FamData}} object using one of its model-fitting methods. This
+#'   class provides only a default constructor without any initializer.
 #'
 #' @export
 FamModelFit <- R6Class(
@@ -15,17 +16,6 @@ FamModelFit <- R6Class(
   # Public members ============================================================
 
   public = list(
-
-    # Constructor =============================================================
-
-    #' @description Stub constructor to prevent instantiation of this abstract
-    #'   class.
-    initialize = function() {
-      stop(paste(
-        class(self)[1],
-        "is an abstract class that cannot be initialized."
-      ))
-    },
 
     # Accessors ===============================================================
 

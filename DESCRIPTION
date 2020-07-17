@@ -1,27 +1,35 @@
 Package: FamModel
 Type: Package
 Title: Regression Modeling for Family-Based Genetic Studies
-Version: 0.2.0
+Version: 0.2.0.9000
 Authors@R: person("Daniel D.", "Kinnamon",
     email = "Daniel.Kinnamon@osumc.edu",
-    role = c("aut", "cre"))
+    role = c("aut", "cre"),
+    comment = c(ORCID = "0000-0002-0867-5227"))
 Description: This package implements regression models for family-based genetic
     studies, including mixed models. While such models can be fit with other
-    existing software, this package tries to provide a unified solution in the
-    R environment. It also leverages modern automatic differentiation techniques
-    to fit model quickly and allow a wider variety of likelihood based
-    inferential procedures.
+    existing software, this package tries to provide a unified solution that
+    leverages the flexibility of the R environment. It also leverages modern
+    automatic differentiation techniques to fit likelihood-based models
+    quickly.
 License: MIT + file LICENSE
 Depends:
     R (>= 3.5.0)
 Imports:
-    R6 (>= 2.4.1),
+    graphics,
+    methods,
+    stats,
     data.table (>= 1.12.8),
-    TMB (>= 1.7.16),
-    kinship2 (>= 1.8.5)
+    Formula (>= 1.2-3),
+    kinship2 (>= 1.8.5),
+    Matrix (>= 1.2-18),
+    R6 (>= 2.4.1),
+    TMB (>= 1.7.16)
 LinkingTo:
-    TMB (>= 1.7.16),
-    RcppEigen (>= 0.3.3.7)
+    RcppEigen (>= 0.3.3.7),
+    TMB (>= 1.7.16)
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.0.2
+Suggests:
+    testthat (>= 2.1.0)

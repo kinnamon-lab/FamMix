@@ -2,12 +2,21 @@
 
 #' Family data for modeling
 #'
-#' @description A \code{R6} class that stores family data and a kinship
-#'   matrix. Methods of this class can then be used to fit regression models
-#'   such as polygenic mixed models. The class currently supports only family
-#'   data with one observation per subject and will check that this requirement
-#'   is met.
+#' @description A `R6` class that stores family data and a kinship matrix.
 #'
+#' @details Methods of this class can be used to fit regression models such as
+#'   polygenic mixed models. The class currently supports only family data with
+#'   one observation per subject and will check that this requirement is met.
+#'
+#' Note that the private `data` member of the instance (returned by the
+#'   [`FamData$get_data()`](#method-get_data) method) will always be sorted by
+#'   ascending `family_id` and ascending `indiv_id` within `family_id`
+#'   regardless of the sort order of the input data set. Also, pedigree columns
+#'   in the input data set will be renamed in the `data` member; this mapping
+#'   can be returned using the [`FamData$get_var_map()`](#method-get_var_map)
+#'   method.
+#'
+#' @md
 #' @export
 FamData <- R6Class(
   "FamData",
@@ -20,51 +29,50 @@ FamData <- R6Class(
 
     # Constructor =============================================================
 
-    #' @description Constructs a new instance of this class. All constructor
-    #'   arguments other than \code{data} \emph{must be named}. There are two
-    #'   possible constructor signatures:
-    #' \preformatted{
-    #' FamData$new(data, family_id, indiv_id, proband, sex,
-    #'             maternal_id, paternal_id, mzgrp, dzgrp)
-    #' }
-    #' \preformatted{FamData$new(data, family_id, indiv_id, proband, phi)}
-    #' @param data A \code{data.frame} or \code{data.table} containing all
+    #' @description Constructs a new instance of this class.
+    #'
+    #' @details All constructor arguments other than `data`
+    #'   *must be named*. There are two possible constructor signatures:
+    #'   ```
+    #'   FamData$new(data, family_id, indiv_id, proband, sex,
+    #'               maternal_id, paternal_id, mzgrp, dzgrp)
+    #'
+    #'   FamData$new(data, family_id, indiv_id, proband, phi)
+    #'   ```
+    #' @param data A `data.frame` or [`data.table`] containing all
     #'   phenotypes and genetic variables of interest.
     #' @param ... The arguments required for a particular method signature;
     #'   see below for detailed descriptions.
     #' @param family_id Character string containing the name of a numeric or
-    #'   character column in \code{data} containing a family identifier.
+    #'   character column in `data` containing a family identifier.
     #' @param indiv_id Character string containing the name of a numeric or
-    #'   character column in \code{data} containing a individual identifier.
+    #'   character column in `data` containing a individual identifier.
     #' @param proband Character string containing the name of a numeric column
-    #'   in \code{data} containing 1 for probands and 0 otherwise. \code{NA} is
-    #'   not permitted.
+    #'   in `data` containing 1 for probands and 0 otherwise. `NA` is  not
+    #'   permitted.
     #' @param sex Character string containing the name of a numeric column in
-    #'   \code{data} containing the individual's sex (1 = "male", 2 = "female")
-    #'   or \code{NA} if unknown.
+    #'   `data` containing the individual's sex (1 = "male", 2 = "female")
+    #'   or `NA` if unknown.
     #' @param maternal_id Character string containing the name of a column in
-    #'   \code{data} of the same type as \code{indiv_id} containing the
-    #'   \code{indiv_id} of the individual's mother or 0 (numeric), ""
-    #'   (character), or \code{NA} if a founder. See documentation for
-    #'   \code{\link[kinship2]{pedigree}}.
+    #'   `data` of the same type as `indiv_id` containing the `indiv_id` of the
+    #'   individual's mother or 0 (numeric), "" (character), or `NA` if a
+    #'   founder. See documentation for [`kinship2::pedigree`].
     #' @param paternal_id Character string containing the name of a column in
-    #'   \code{data} of the same type as \code{indiv_id} containing the
-    #'   \code{indiv_id} of the individual's father or or 0 (numeric), ""
-    #'   (character), or \code{NA} if a founder. See documentation for
-    #'   \code{\link[kinship2]{pedigree}}.
+    #'   `data` of the same type as `indiv_id` containing the `indiv_id` of the
+    #'   individual's father or or 0 (numeric), "" (character), or `NA` if a
+    #'   founder. See documentation for [`kinship2::pedigree`].
     #' @param mzgrp Character string containing the name of a numeric,
-    #'   character, or factor column in \code{data} containing the same value
-    #'   for all members of a monozygotic twin group. \code{NA} should be used
-    #'   for all individuals who are not monozygotic twins.
+    #'   character, or factor column in `data` containing the same value for all
+    #'   members of a monozygotic twin group. `NA` should be used for all
+    #'   individuals who are not monozygotic twins.
     #' @param dzgrp Character string containing the name of a numeric,
-    #'   character, or factor column in \code{data} containing the same value
-    #'   for all members of a dizygotic twin group. \code{NA} should be used for
-    #'   all individuals who are not dizygotic twins.
-    #' @param phi A matrix coercible to a
-    #'   \code{\link[Matrix:dsCMatrix-class]{dsCMatrix}} containing the pairwise
-    #'   kinship coefficients for individuals. Note that \code{phi[i, j]} must
-    #'   contain the kinship coefficient between the individuals in
-    #'   \code{data[i, ]} and \code{data[j, ]}.
+    #'   character, or factor column in `data` containing the same value for all
+    #'   members of a dizygotic twin group. `NA` should be used for all
+    #'   individuals who are not dizygotic twins.
+    #' @param phi A matrix coercible to a [`Matrix::dsCMatrix-class`] containing
+    #'   the pairwise kinship coefficients for individuals. Note that
+    #'   `phi[i, j]` must contain the kinship coefficient between the individuals
+    #'   in `data[i, ]` and `data[j, ]`.
     initialize = function(data, ...) {
       private$data_name <- deparse(substitute(data))
       args <- list(...)
@@ -126,6 +134,7 @@ FamData <- R6Class(
             "indiv_id column contains improperly formatted data. See ?FamData."
           )
         }
+        private$unique_id <- !anyDuplicated(private$data[, id])
         if (class(private$data[, mid]) != class(private$data[, id])) {
           stop(
             "maternal_id column contains improperly formatted data. ",
@@ -137,6 +146,30 @@ FamData <- R6Class(
             "paternal_id column contains improperly formatted data. ",
             "See ?FamData."
           )
+        }
+        bad_peds <- data.table(
+          with(
+            private$data,
+            kinship2::familycheck(
+              famid = fmid,
+              id = if (private$unique_id) id else paste(fmid, id, sep = "/"),
+              father.id = if (private$unique_id) {
+                pid
+              } else {
+                paste(fmid, pid, sep = "/")
+              },
+              mother.id = if (private$unique_id) {
+                mid
+              } else {
+                paste(fmid, mid, sep = "/")
+              }
+            )
+          )
+        )[unrelated > 0 | split != 1 | join != 0]
+        if (nrow(bad_peds) > 0) {
+          cat("Incorrectly specified pedigrees:\n")
+          print(bad_peds)
+          stop("Incorrectly specified pedigrees found. See above output.")
         }
         if (
           !is.numeric(private$data[, pr]) |
@@ -207,6 +240,37 @@ FamData <- R6Class(
         # Calculate autosomal kinship matrix
         private$phi <-
           kinship2::kinship(private$ped_list, chrtype = "autosome")
+        # Check that order of individuals in kinship matrix is the same as in
+        # data member. Note that kinship2::kinship uses "id" unless it is not
+        # unique across families, in which case it uses "fmid/id"
+        if (
+          !(
+            isTRUE(all.equal(
+              private$data[, as.character(id)], rownames(private$phi)
+            )) &&
+            isTRUE(all.equal(
+              private$data[, as.character(id)], colnames(private$phi)
+            ))
+          ) &&
+          !(
+            isTRUE(all.equal(
+              private$data[,  paste(fmid, id, sep = "/")], rownames(private$phi)
+            )) &&
+            isTRUE(all.equal(
+              private$data[,  paste(fmid, id, sep = "/")], colnames(private$phi)
+            ))
+          )
+        ) {
+          stop("Subject order in phi matrix does not match data member")
+        }
+        # Store IDs of families with consanguinity, determined as those
+        # containing individuals with phi_ii > 0.5. This follows because phi_ii
+        # = 0.5(1 + f_i) and f_i > 0 iff the individual is inbred (i.e., parents
+        # are related)
+        private$consang <- private$data[
+          Matrix::diag(private$phi) > 0.5,
+          unique(fmid)
+        ]
         # Data set and kinship matrix constructor -----------------------------
       } else if (
         setequal(
@@ -246,6 +310,7 @@ FamData <- R6Class(
             "indiv_id column contains improperly formatted data. See ?FamData."
           )
         }
+        private$unique_id <- !anyDuplicated(private$data[, id])
         if (
           !is.numeric(private$data[, pr]) |
           !setequal(unique(private$data[, pr]), c(0, 1))
@@ -262,17 +327,35 @@ FamData <- R6Class(
         }
         # Cast kinship matrix argument to appropriate type
         phi <- as(args[["phi"]], "symmetricMatrix")
-        # Get "fmid/id" in original sort order from data member
-        ids <- private$data[, paste(fmid, id, sep = "/")]
-        # Make "fmid/id" the row and column names of kinship matrix
+        # Get "id" or "fmid/id" in original sort order from data
+        # member. Mimicking behavior of kinship2::kinship, which uses "id"
+        # unless it is not unique across families
+        ids <- if (private$unique_id) {
+          private$data[, as.character(id)]
+        } else {
+          private$data[, paste(fmid, id, sep = "/")]
+        }
+        # Make "id" or "fmid/id" the row and column names of kinship matrix
         dimnames(phi) <- list(ids, ids)
         # Sort data member member by fmid, then id
         setkey(private$data, fmid, id)
-        # Get "fmid/id" from data member in new sort order
-        sorted_ids <- private$data[, paste(fmid, id, sep = "/")]
+        # Get "id" or "fmid/id" from data member in new sort order
+        sorted_ids <- if (private$unique_id) {
+          private$data[, as.character(id)]
+        } else {
+          private$data[, paste(fmid, id, sep = "/")]
+        }
         # Permute rows and columns of kinship matrix to be in this order and
         # assign to kinship matrix member
         private$phi <- phi[sorted_ids, sorted_ids]
+        # Store IDs of families with consanguinity, determined as those
+        # containing individuals with phi_ii > 0.5. This follows because phi_ii
+        # = 0.5(1 + f_i) and f_i > 0 iff the individual is inbred (i.e., parents
+        # are related)
+        private$consang <- private$data[
+          Matrix::diag(private$phi) > 0.5,
+          unique(fmid)
+        ]
         # Uncrecognized constructor -------------------------------------------
       } else {
         stop("Unrecognized constructor signature. Please see documentation.")
@@ -281,19 +364,72 @@ FamData <- R6Class(
 
     # Accessors ===============================================================
 
-    #' @description Returns data member.
-    get_data = function() private$data,
+    #' @description Returns a copy of data member (to prevent accidental
+    #'   modification of data member [`data.table`] by reference).
+    get_data = function() copy(private$data),
 
-    #' @description Returns name of input \code{data.frame} or
-    #'   \code{data.table}.
+    #' @description Returns name of input `data.frame` or [`data.table`].
     get_data_name = function() private$data_name,
+
+    #' @description Returns character vector containing family IDs in which
+    #'   consanguinity was found (based on individual self-kinship coefficient
+    #'   greater than 0.5).
+    get_consang = function() private$consang,
 
     #' @description Returns kinship matrix member.
     get_phi = function() private$phi,
 
     #' @description Returns list mapping variable names in input data set in
-    #'   \code{data} argument to those in data member.
+    #'   `data` argument to those in data member.
     get_var_map = function() private$var_map,
+
+    # Print method ============================================================
+
+    #' @description Prints information about contents of `FamData` objects
+    #'   with nice formatting.
+    #'
+    print = function() {
+      cat("\n==========================\n")
+      cat("FamData OBJECT INFORMATION\n")
+      cat("==========================\n")
+      cat("Input data set: ", private$data_name, "\n", sep = "")
+      cat("Families: ", private$data[, uniqueN(fmid)], "\n", sep = "")
+      cat("Subjects: ", uniqueN(private$data[, .(fmid, id)]), "\n", sep = "")
+      cat(
+        "Kinship matrix: ",
+        if ("mid" %in% names(private$var_map)) {
+          "Calculated from data set"
+        } else {
+          "Supplied to constructor"
+        },
+        "\n", sep = ""
+      )
+      cat("Consanguinous families: ")
+      if (length(private$consang) == 0) {
+        cat("None\n")
+      } else {
+        cat("\n")
+        cat(private$consang, sep = "\n")
+      }
+      cat("Pedigree variable mapping:\n")
+      cat(
+        sprintf(
+          "  %6-s%s", paste0(names(private$var_map), ":"), private$var_map
+        ),
+        sep = "\n"
+      )
+      cat(
+        "Unique subject ID: ", if (private$unique_id) "id" else "fmid + id",
+        "\n", sep = ""
+      )
+      cat("Available variables:\n")
+      cat(
+        strwrap(paste0(
+          setdiff(names(private$data), names(private$var_map)), collapse = ", "
+        )),
+        sep = "\n"
+      )
+    },
 
     # Model fitting methods ===================================================
 
@@ -302,41 +438,46 @@ FamData <- R6Class(
     #' @details Fits a linear mixed model to family data assuming that the
     #'    family has been ascertained through a single proband meeting certain
     #'    criteria. To do this, it uses the appropriate multivariate normal
-    #'    likelihood conditional on the observed data in the proband (see the
-    #'    Beaty et al. reference). Families without probands or more than one
-    #'    proband are excluded. The model assumes an additive polygenic effect,
-    #'    parameterized in terms of heritability, and no shared environmental
-    #'    effect. The heritability and total variance can be allowed to vary
-    #'    across groups of families (see \code{formula} argument), but, within
-    #'    each group, all founders in the family are assumed to be drawn from
-    #'    the same randomly mating population. See the Lange and Boerwinkle et
-    #'    al. references for additional details on this class of mixed models.
+    #'    likelihood conditional on the observed data in the proband (see
+    #'    Hopper and Mathews, 1982 and Beaty et al., 1987). Families without
+    #'    probands or more than one proband are excluded. The model assumes an
+    #'    additive polygenic effect, parameterized in terms of heritability,
+    #'    and no shared environmental effect. The heritability and total
+    #'    variance can be allowed to vary across groups of families (see
+    #'    `formula` argument), but, within each group, all founders in the
+    #'    family are assumed to be drawn from the same randomly mating
+    #'    population. See Lange (2002) and Boerwinkle et al. (1986) for
+    #'    additional details on this class of mixed models.
     #'
-    #' @param formula A \code{\link[Formula]{Formula}} object describing the
-    #'   model for a phenotype. The formula is of the form
-    #'   \code{y ~ mean | group}, where \code{y} (required) is the outcome,
-    #'   \code{mean} (optional) specifies the mean model that includes an
-    #'   intercept by default, and \code{| group} (optional) specifies a factor
-    #'   term that can be used assign families to homogeneous groups with
-    #'   different variance components. Multiple variables can be combined into
-    #'   a single factor using \code{:}.
+    #' @param formula A [`Formula::Formula`] object describing the model for a
+    #'   phenotype. The formula is of the form `y ~ mean | group`, where `y`
+    #'   (required) is the outcome, `mean` (optional) specifies the mean model
+    #'   that includes an intercept by default, and `| group` (optional)
+    #'   specifies a factor term that can be used assign families to homogeneous
+    #'   groups with different variance components. Multiple variables can be
+    #'   combined into a single factor using `:`.
     #' @param ... Additional parameters to pass to the optimization function
-    #'   (currently \code{\link{nlminb}}).
+    #'   (currently [`stats::nlminb`]).
     #'
-    #' @return Returns a \code{\link{FamLMMFit}} object.
+    #' @return Returns a [`FamLMMFit`] object.
     #'
     #' @references
     #' Beaty TH, Liang KY, Rao DC. Robust inference for variance components
     #'   models in families ascertained through probands: I. Conditioning on
-    #'   proband's phenotype. \emph{Genet Epidemiol}. 1987;4(3):203-10.
+    #'   proband's phenotype. *Genet Epidemiol*. 1987;4(3):203-10.
+    #'   <https://doi.org/10.1002/gepi.1370040305>
     #'
     #' Boerwinkle E, Chakraborty R, Sing CF. The use of measured genotype
     #'   information in the analysis of quantitative phenotypes in man. I.
-    #'   Models and analytical methods. \emph{Ann Hum Genet}.
-    #'   1986;50(Pt 2):181-94.
+    #'   Models and analytical methods. *Ann Hum Genet* 1986;50(Pt 2):181-94.
+    #'   <https://doi.org/10.1111/j.1469-1809.1986.tb01037.x>
     #'
-    #' Lange K. \emph{Mathematical and statistical methods for genetic
-    #'   analysis}. 2nd ed. New York: Springer; 2002.
+    #' Hopper JL, Mathews JD. Extensions to multivariate normal models for
+    #'   pedigree analysis. *Ann Hum Genet*. 1982;46(4):373-383.
+    #'   <https://doi.org/10.1111/j.1469-1809.1982.tb01588.x>
+    #'
+    #' Lange K. *Mathematical and statistical methods for genetic analysis*.
+    #'   2nd ed. New York: Springer; 2002.
     lmm = function(formula, ...) {
       if (!Formula::is.Formula(formula)) formula <- Formula::Formula(formula)
       formula_dims <- length(formula)
@@ -357,18 +498,26 @@ FamData <- R6Class(
       mod_data <- private$make_model_mats_lmm(formula)
       init_fits <- lm(
         formula(formula, rhs = 1),
-        data = private$data[mod_data[["incl"]]]
+        data = private$data[mod_data[["incl_ids"]], on = .(fmid, id)]
       )
+      # Make sure name patterns reserved for variance components are not used in
+      # mean model
+      if (any(grepl("^(h2_a|sigma)(\\..+)?$", names(coef(init_fits))))) {
+        stop(
+          "Variables in mean model cannot have names matching the pattern ",
+          "'^(h2_a|sigma)(\\..+)?$'"
+        )
+      }
       parameters <- list(
         betas = coef(init_fits),
         h2_a = rep(0, ncol(mod_data[["f_pops"]])),
-        sigma2 = rep(
-          summary(init_fits)[["sigma"]] ^ 2,
+        sigma = rep(
+          summary(init_fits)[["sigma"]],
           ncol(mod_data[["f_pops"]])
         )
       )
       if (ncol(mod_data[["f_pops"]]) > 1) {
-        names(parameters[["h2_a"]]) <- names(parameters[["sigma2"]]) <-
+        names(parameters[["h2_a"]]) <- names(parameters[["sigma"]]) <-
           colnames(mod_data[["f_pops"]])
       }
       objfun <- TMB::MakeADFun(
@@ -378,13 +527,13 @@ FamData <- R6Class(
         method = NULL,
         silent = TRUE
       )
-      attr(objfun, "type") <- "TMB"
+      attr(objfun, "type") <- "LMM-SA"
       parm_lower <- rep(-Inf, length(objfun[["par"]]))
       parm_upper <- rep(Inf, length(objfun[["par"]]))
       names(parm_lower) <- names(parm_upper) <- names(objfun[["par"]])
       parm_lower[names(parm_lower) == "h2_a"] <- 0
       parm_upper[names(parm_upper) == "h2_a"] <- 1
-      parm_lower[names(parm_lower) == "sigma2"] <-
+      parm_lower[names(parm_lower) == "sigma"] <-
         sqrt(.Machine[["double.eps"]])
       # Transform problem by scaling parameters by square root of their Hessian
       # diagonal elements at the initial estimates, which should improve
@@ -392,7 +541,7 @@ FamData <- R6Class(
       # is a non-adaptive version of the adaptive scaling for unconstrained
       # optimization in section 4c of the PORT documentation included in the
       # references for nlminb.
-      d <- sqrt(abs(diag(objfun$he())))
+      d <- sqrt(abs(diag(objfun[["he"]](objfun[["par"]]))))
       if (!all(is.finite(d))) {
         # If there are any -Inf, Inf, NA, or NaN values, do not scale
         d <- rep_len(1, length(d))
@@ -403,10 +552,10 @@ FamData <- R6Class(
           min(d[d >= sqrt(.Machine[["double.eps"]])])
       }
       optres <- nlminb(
-        objfun$par,
-        objfun$fn,
-        objfun$gr,
-        objfun$he,
+        objfun[["par"]],
+        objfun[["fn"]],
+        objfun[["gr"]],
+        objfun[["he"]],
         lower = parm_lower,
         upper = parm_upper,
         scale = d,
@@ -420,9 +569,9 @@ FamData <- R6Class(
     # Plotting methods ========================================================
 
     #' @description For objects initialized with pedigree data, allows plotting
-    #'   of individual pedigrees using \pkg{kinship2}.
+    #'   of individual pedigrees using [`kinship2`].
     #' @param famid Argument matching the value of a single family in the
-    #'   \code{family_id} column used in the constructor.
+    #'   `family_id` column used in the constructor.
     plot_pedigree = function(famid) {
       if (!is.null(private$ped_list)) plot(private$ped_list[famid])
     }
@@ -434,10 +583,12 @@ FamData <- R6Class(
 
     # Data members ============================================================
 
+    consang = NULL,
     data = NULL,
     data_name = NULL,
     ped_list = NULL,
     phi = NULL,
+    unique_id = NULL,
     var_map = NULL,
 
     # Utility methods =========================================================
@@ -460,10 +611,6 @@ FamData <- R6Class(
         .(n_rel = sum(pr == 0)),
         keyby = fmid
       ][n_rel > 0, fmid]
-      excl_fam <- setdiff(
-        unique(private$data[, fmid]),
-        intersect(fam_w_proband, fam_w_rels)
-      )
       incl <- sort(intersect(
         non_na,
         private$data[, which(fmid %in% intersect(fam_w_proband, fam_w_rels))]
@@ -486,6 +633,13 @@ FamData <- R6Class(
         ))
       ) {
         stop("Model frame not ordered by ascending fmid, then ascending id")
+      }
+      incl_ids <- mf[, c("(fmid)", "(id)")]
+      names(incl_ids) <- c("fmid", "id")
+      incl_phi_ids <- if (private$unique_id) {
+        with(mf, as.character(`(id)`))
+      } else {
+        with(mf, paste(`(fmid)`, `(id)`, sep = "/"))
       }
       y <- as.numeric(model.response(mf))
       X <- model.matrix(formula, mf, rhs = 1)
@@ -525,11 +679,11 @@ FamData <- R6Class(
       list(
         y = y,
         X = X,
-        phi = private$phi[incl, incl],
+        phi = private$phi[incl_phi_ids, incl_phi_ids],
         f_sizes = f_sizes,
         f_pr_idxs = f_pr_idxs,
         f_pops = f_pops,
-        incl = incl
+        incl_ids = as.list(incl_ids)
       )
     }
   )

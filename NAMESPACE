@@ -2,10 +2,12 @@
 
 export(Contrast)
 export(FamData)
-export(FamLMMFit)
 export(FamModelFit)
 export(make_coef_mat)
 export(print_ests)
 import(data.table)
+import(stats)
 importFrom(R6,R6Class)
+importFrom(graphics,plot)
+importFrom(methods,as)
 useDynLib(sing_asc_lmm)
