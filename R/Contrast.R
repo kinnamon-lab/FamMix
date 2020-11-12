@@ -1,12 +1,12 @@
 # Contrast.R - Definition for Contrast R6 class and methods
 
-#' Contrast estimated from an object inheriting from \code{FamModelFit}
+#' Contrast estimated from an object inheriting from `FamModelFit`
 #'
-#' @description An R6 class that stores results for a contrast estimated using a
-#'   specified object inheriting from \code{\link{FamModelFit}}. Wald tests and
-#'   confidence intervals for individual rows of the contrast matrix
-#'   \code{L_mat} as well as an overall Wald chi-square test of the null
-#'   hypothesis \code{L_mat \%*\% theta_hat = m} are provided.
+#' @description An R6 class that stores results for a contrast of the form
+#'   \eqn{L \theta - m} estimated using a specified object inheriting from
+#'   [`FamModelFit`]. Wald tests and confidence intervals for individual
+#'   rows of the contrast matrix as well as an overall Wald chi-square test of
+#'   the null hypothesis \eqn{L \theta - m = 0} are provided.
 #'
 #' @export
 Contrast <- R6Class(
@@ -21,11 +21,11 @@ Contrast <- R6Class(
     # Constructor =============================================================
 
     #' @description Constructs a new instance of this class.
-    #' @param model_fit An object inheriting from \code{\link{FamModelFit}}.
-    #' @param L_mat A contrast vector (1 df) or \code{matrix} (>1 df) containing
+    #' @param model_fit An object inheriting from [`FamModelFit`].
+    #' @param L_mat A contrast vector (1 df) or `matrix` (>1 df) containing
     #'   one contrast in each row.
     #' @param m An optional vector containing the null value for each contrast.
-    #'   Will be set to the zero vector of length \code{nrow(L_mat)} if not
+    #'   Will be set to the zero vector of length `nrow(L_mat)` if not
     #'   specified.
     initialize = function(model_fit, L_mat, m) {
       if (any(class(model_fit) == "FamModelFit")) {
@@ -48,7 +48,7 @@ Contrast <- R6Class(
       }
       rownames(L_mat) <- paste("Row", seq(1, nrow(L_mat)))
       colnames(L_mat) <- names(model_fit$get_theta_hat())
-      L_theta_hat <- drop(L_mat %*% model_fit$get_theta_hat())
+      L_theta_hat_m <- drop(L_mat %*% model_fit$get_theta_hat()) - m
       V_L_theta_hat <- tcrossprod(
         L_mat %*% model_fit$get_V_theta_hat(),
         L_mat
@@ -56,11 +56,11 @@ Contrast <- R6Class(
       X2 <- drop(
         crossprod(L_theta_hat - m, solve(V_L_theta_hat, L_theta_hat - m))
       )
-      df_X2 <- nrow(L_mat)
+      df_X2 <- Matrix::rankMatrix(L_mat)
       p_X2 <- pchisq(X2, df = df_X2, lower.tail = FALSE)
       private$L_mat <- L_mat
       private$m <- m
-      private$L_theta_hat <- L_theta_hat
+      private$L_theta_hat_m <- L_theta_hat_m
       private$V_L_theta_hat <- V_L_theta_hat
       private$X2 <- X2
       private$df_X2 <- df_X2
@@ -69,23 +69,23 @@ Contrast <- R6Class(
 
     # Accessors ===============================================================
 
-    #' @description Returns \code{model_fit} object.
+    #' @description Returns `model_fit` object.
     get_model_fit = function() private$model_fit,
 
-    #' @description Returns \code{L_mat}.
+    #' @description Returns `L_mat`.
     get_L_mat = function() private$L_mat,
 
-    #' @description Returns \code{m}.
+    #' @description Returns `m`.
     get_m = function() private$m,
 
-    #' @description Returns \code{L \%*\% theta_hat}.
-    get_L_theta_hat = function() private$L_theta_hat,
+    #' @description Returns \eqn{L \hat{\theta} - m}.
+    get_L_theta_hat_m = function() private$L_theta_hat_m,
 
-    #' @description Returns \code{L \%*\% V_theta_hat \%*\% t(L)}.
+    #' @description Returns \eqn{L \hat{V}(\hat{\theta}) L^{'}}.
     get_V_L_theta_hat = function() private$V_L_theta_hat,
 
     #' @description Returns Wald chi-square statistic for null hypothesis
-    #'   \code{L_mat \%*\% theta_hat = m}.
+    #'   \eqn{L \theta - m = 0}.
     get_X2 = function() private$X2,
 
     #' @description Returns degrees of freedom of Wald chi-square statistic.
@@ -96,8 +96,8 @@ Contrast <- R6Class(
 
     # Print method ============================================================
 
-    #' @description Formatted printing of the \code{Contrast} object.
-    #' @param ... Arguments passed on to \code{\link{print_ests}}.
+    #' @description Formatted printing of the `Contrast` object.
+    #' @param ... Arguments passed on to [print_ests()].
     print = function(...) {
       cat("\n=== CONTRAST ===\n")
       cat("\nContrast Matrix and Null Values (L_mat|m)'\n")
@@ -110,7 +110,7 @@ Contrast <- R6Class(
         ),
         quote = FALSE
       )
-      print_ests(private$L_theta_hat, private$V_L_theta_hat, ...)
+      print_ests(private$L_theta_hat_m, private$V_L_theta_hat, ...)
       cat("\nWald Chi-square Test of Ho: L_mat %*% theta_hat = m\n")
       cat("---------------------------------------------------\n")
       cat(
@@ -129,7 +129,7 @@ Contrast <- R6Class(
     model_fit = NULL,
     L_mat = NULL,
     m = NULL,
-    L_theta_hat = NULL,
+    L_theta_hat_m = NULL,
     V_L_theta_hat = NULL,
     X2 = NULL,
     df_X2 = NULL,
