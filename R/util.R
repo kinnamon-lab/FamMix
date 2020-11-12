@@ -105,3 +105,65 @@ print_ests <- function(theta_hat, V_theta_hat, trans, ...) {
   }
   do.call(stats::printCoefmat, printCoefmat_args)
 }
+
+#' Executes LMM optimization
+#'
+#' The objective function made by [TMB::MakeADFun()] is a `list` containing an
+#' environment and a series of functions enclosed by it. Thus, regardless of
+#' whether `objfun` is copied, the function calls will still update the
+#' environment in the object passed through `objfun` in the calling frame,
+#' meaning that this function has the same side effect as executing the code in
+#' the calling frame.
+#'
+#' @param objfun An objective function `list` from [TMB::MakeADFun()].
+#' @param ... Additional parameters to pass to the `control` list for [optim()]
+#'   with `method = "L-BGFS-B"`. Note that `parscale` and `fnscale` cannot
+#'   be modified.
+#'
+#' @return A `list` with optimization results. See [optim()].
+#'
+lmm_optim <- function(objfun, ...) {
+  parm_lower <- rep(-Inf, length(objfun[["par"]]))
+  parm_upper <- rep(Inf, length(objfun[["par"]]))
+  names(parm_lower) <- names(parm_upper) <- names(objfun[["par"]])
+  parm_lower[names(parm_lower) == "h2_a"] <- 0
+  parm_upper[names(parm_upper) == "h2_a"] <- 1
+  parm_lower[names(parm_lower) == "sigma"] <-
+    sqrt(.Machine[["double.eps"]])
+  # Transform problem by multiplying parameters by square root of their Hessian
+  # diagonal elements at the initial estimates, which should improve
+  # conditioning of the Hessian approximation and therefore numerical
+  # convergence.  Note that optim converts the parameters by *dividing* by
+  # parscale, so we need to set parscale to 1/d
+  d <- sqrt(abs(diag(objfun[["he"]](objfun[["par"]]))))
+  if (!all(is.finite(d))) {
+    # If there are any -Inf, Inf, NA, or NaN values, do not scale
+    d <- rep_len(1, length(d))
+  } else {
+    # Otherwise, set any scaling factors that are numerically <= 0 to the
+    # minimum of those that are numerically > 0
+    d[d <= sqrt(.Machine[["double.eps"]])] <-
+      min(d[d > sqrt(.Machine[["double.eps"]])])
+  }
+  control <- list(...)
+  control[["parscale"]] <- 1 / d
+  # Scale objective function by inverse of initial value
+  control[["fnscale"]] <- objfun[["fn"]](objfun[["par"]])
+  if (is.null(control[["factr"]])) {
+    control[["factr"]] <- 1e-10 / .Machine[["double.eps"]]
+  }
+  if (is.null(control[["pgtol"]])) {
+    control[["pgtol"]] <- sqrt(.Machine[["double.eps"]])
+  }
+  optres <- optim(
+    objfun[["par"]],
+    objfun[["fn"]],
+    objfun[["gr"]],
+    method = "L-BFGS-B",
+    lower = parm_lower,
+    upper = parm_upper,
+    control = control
+  )
+
+  optres
+}

@@ -29,6 +29,8 @@ Type objective_function<Type>::operator() ()
   for (int i = 0; i < f_sizes.size(); i++) {
     // Get zero-based index of family's proband in r_pop
     int f_pr_idx = f_pr_idxs(i) - 1;
+    // Get zero-based index of proband in current family
+    int f_pr_idx_fam = f_pr_idxs(i) - 1 - fidx;
     // Additive polygenic effect covariance matrix for family
     matrix<Type> D_fam =
       Type(2.0) * h2_a_fam(i) * sigma_fam(i) * sigma_fam(i) *
@@ -44,7 +46,8 @@ Type objective_function<Type>::operator() ()
     // Add family contribution to loglikelihood. MVNORM returns -log density for
     // multivariate normal
     nll += MVNORM(Sigma_fam)(r_pop.segment(fidx, f_sizes(i))) +
-      dnorm(r_pop(f_pr_idx), Type(0.0), sigma_fam(i), 1L);
+      dnorm(r_pop(f_pr_idx), Type(0.0),
+            sqrt(Sigma_fam(f_pr_idx_fam, f_pr_idx_fam)), 1L);
     // Update family index counter
     fidx += f_sizes(i);
   }

@@ -456,8 +456,9 @@ FamData <- R6Class(
     #'   specifies a factor term that can be used assign families to homogeneous
     #'   groups with different variance components. Multiple variables can be
     #'   combined into a single factor using `:`.
-    #' @param ... Additional parameters to pass to the optimization function
-    #'   (currently [`stats::nlminb`]).
+    #' @param ... Additional parameters to pass to the `control` list for
+    #'   [optim()] with `method = "L-BGFS-B"`. Note that `parscale` and
+    #'   `fnscale` cannot be modified.
     #'
     #' @return Returns a [`FamLMMFit`] object.
     #'
@@ -528,40 +529,7 @@ FamData <- R6Class(
         silent = TRUE
       )
       attr(objfun, "type") <- "LMM-SA"
-      parm_lower <- rep(-Inf, length(objfun[["par"]]))
-      parm_upper <- rep(Inf, length(objfun[["par"]]))
-      names(parm_lower) <- names(parm_upper) <- names(objfun[["par"]])
-      parm_lower[names(parm_lower) == "h2_a"] <- 0
-      parm_upper[names(parm_upper) == "h2_a"] <- 1
-      parm_lower[names(parm_lower) == "sigma"] <-
-        sqrt(.Machine[["double.eps"]])
-      # Transform problem by scaling parameters by square root of their Hessian
-      # diagonal elements at the initial estimates, which should improve
-      # conditioning of the Hessian and therefore numerical convergence. This
-      # is a non-adaptive version of the adaptive scaling for unconstrained
-      # optimization in section 4c of the PORT documentation included in the
-      # references for nlminb.
-      d <- sqrt(abs(diag(objfun[["he"]](objfun[["par"]]))))
-      if (!all(is.finite(d))) {
-        # If there are any -Inf, Inf, NA, or NaN values, do not scale
-        d <- rep_len(1, length(d))
-      } else {
-        # Otherwise, set any scaling factors that are numerically <= 0 to the
-        # minimum of those that are numerically > 0
-        d[d < sqrt(.Machine[["double.eps"]])] <-
-          min(d[d >= sqrt(.Machine[["double.eps"]])])
-      }
-      optres <- nlminb(
-        objfun[["par"]],
-        objfun[["fn"]],
-        objfun[["gr"]],
-        objfun[["he"]],
-        lower = parm_lower,
-        upper = parm_upper,
-        scale = d,
-        ...
-      )
-      attr(optres, "optfun") <- "nlminb"
+      optres <- lmm_optim(objfun, ...)
       # Return new FamLMMFit object with results
       FamLMMFit$new(self, formula, objfun, optres)
     },

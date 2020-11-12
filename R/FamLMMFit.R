@@ -155,13 +155,10 @@ FamLMMFit <- R6Class(
           "of LMM-SA"
         )
       }
-      if (is.list(optres) && attr(optres, "optfun") == "nlminb") {
+      if (is.list(optres)) {
         private$optres <- optres
       } else {
-        stop(
-          "Argument optres must be a list object with optfun attribute ",
-          "of nlminb"
-        )
+        stop("Argument optres must be a list object")
       }
     },
 
@@ -269,8 +266,7 @@ FamLMMFit <- R6Class(
       sigma_a <- sqrt(h2_a * sigma2)
       sigma_mat <- 2 * sigma_a %*%
         as(as(lmm_data[["phi"]], "symmetricMatrix"), "dsCMatrix") %*%
-        sigma2_a
-      Matrix::diag(sigma_mat) <- Matrix::diag(sigma2)
+        sigma_a + sigma2 - sigma_a ^ 2
 
       # All-subject diagnostics
       y <- lmm_data[["y"]]
@@ -397,19 +393,18 @@ FamLMMFit <- R6Class(
       )
       cat("FAMILY SIZE DISTRIBUTION:\n")
       print(ftable(lmm_data[["f_sizes"]]))
-      if (attr(private$optres, "optfun") == "nlminb") {
-        cat(
-          "CONVERGENCE ",
-          ifelse(
-            private$optres[["convergence"]] == 0,
-            "ACHIEVED",
-            "NOT ACHIEVED"
-          ),
-          " AT -2 LL = ", 2 * private$optres[["objective"]], " AFTER ",
-          private$optres[["iterations"]], " ITERATIONS\n", sep = ""
-        )
-        cat("CRITERION: ", private$optres[["message"]], "\n", sep = "")
-      }
+      cat(
+        "CONVERGENCE ",
+        ifelse(
+          private$optres[["convergence"]] == 0,
+          "ACHIEVED",
+          "NOT ACHIEVED"
+        ),
+        " AT -2 LL = ", 2 * private$optres[["value"]], "\n",
+        "EVALUATIONS:\n", sep = ""
+      )
+      print(private$optres[["counts"]], sep = "")
+      cat("MESSAGE: ", private$optres[["message"]], "\n", sep = "")
       cat(
         "MAX ABSOLUTE ELEMENT OF LL GRADIENT (g) AT SOLUTION: ",
         format(max(abs(theta_gr)), scientific = TRUE),
@@ -469,8 +464,9 @@ FamLMMFit <- R6Class(
     #'
     #' @param print If `TRUE` (default), prints the likelihood ratio test
     #'   results in a nice format.
-    #' @param ... Additional parameters to pass to the optimization function
-    #'   (currently [stats::nlminb()]).
+    #' @param ... Additional parameters to pass to the `control` list for
+    #'   [optim()] with `method = "L-BGFS-B"`. Note that `parscale` and
+    #'   `fnscale` cannot be modified.
     #'
     #' @return A [`data.table`] containing likelihood ratio test results,
     #'   invisibly.
@@ -480,114 +476,84 @@ FamLMMFit <- R6Class(
     #'   Estimators and Likelihood Ratio Tests Under Nonstandard Conditions.
     #'   *J Am Stat Assoc*. 1987; 82(398):605-10.
     #'   <https://doi.org/10.2307/2289471>
-    h2_a_lrts = function(print = TRUE, ...) {
-      mod_data <- private$objfun[["env"]]$data
-      parameters <- private$objfun[["env"]]$parameters
-      h2_a_parms <- if (is.null(names(parameters[["h2_a"]]))) {
-        "h2_a"
-      } else {
-        names(parameters[["h2_a"]])
-      }
-      parameters[["h2_a"]] <- rep(0, length(h2_a_parms))
-      res <- rbindlist(lapply(h2_a_parms, function(x) {
-        map_list <- list(
-          h2_a = factor(seq(1, length(h2_a_parms)))
-        )
-        names(map_list[["h2_a"]]) <- h2_a_parms
-        map_list[["h2_a"]][x] <- NA
-        map_list[["h2_a"]] <- factor(map_list[["h2_a"]])
-        objfun <- TMB::MakeADFun(
-          mod_data,
-          parameters,
-          map = map_list,
-          DLL = "sing_asc_lmm",
-          method = NULL,
-          silent = TRUE
-        )
-        if (attr(private$optres, "optfun") == "nlminb") {
-          parm_lower <- rep(-Inf, length(objfun[["par"]]))
-          parm_upper <- rep(Inf, length(objfun[["par"]]))
-          names(parm_lower) <- names(parm_upper) <- names(objfun[["par"]])
-          parm_lower[names(parm_lower) == "h2_a"] <- 0
-          parm_upper[names(parm_upper) == "h2_a"] <- 1
-          parm_lower[names(parm_lower) == "sigma"] <-
-            sqrt(.Machine[["double.eps"]])
-          # Transform problem by scaling parameters by square root of their
-          # Hessian diagonal elements at the initial estimates, which should
-          # improve conditioning of the Hessian and therefore numerical
-          # convergence. This is a non-adaptive version of the adaptive scaling
-          # for unconstrained optimization in section 4c of the PORT
-          # documentation included in the references for nlminb.
-          d <- sqrt(abs(diag(objfun[["he"]](objfun[["par"]]))))
-          if (!all(is.finite(d))) {
-            # If there are any -Inf, Inf, NA, or NaN values, do not scale
-            d <- rep_len(1, length(d))
-          } else {
-            # Otherwise, set any scaling factors that are numerically <= 0 to
-            # the minimum of those that are numerically > 0
-            d[d < sqrt(.Machine[["double.eps"]])] <-
-              min(d[d >= sqrt(.Machine[["double.eps"]])])
-          }
-          optres <- nlminb(
-            objfun[["par"]],
-            objfun[["fn"]],
-            objfun[["gr"]],
-            objfun[["he"]],
-            lower = parm_lower,
-            upper = parm_upper,
-            scale = d,
-            ...
-          )
-          converge <- (optres[["convergence"]] == 0)
+    get_h2_a_lrts = function(print = TRUE, ...) {
+      if (is.null(private$h2_a_lrts)) {
+        mod_data <- private$objfun[["env"]]$data
+        parameters <- private$objfun[["env"]]$parameters
+        h2_a_parms <- if (is.null(names(parameters[["h2_a"]]))) {
+          "h2_a"
+        } else {
+          names(parameters[["h2_a"]])
         }
+        parameters[["h2_a"]] <- rep(0, length(h2_a_parms))
+        res <- rbindlist(lapply(h2_a_parms, function(x) {
+          map_list <- list(
+            h2_a = factor(seq(1, length(h2_a_parms)))
+          )
+          names(map_list[["h2_a"]]) <- h2_a_parms
+          map_list[["h2_a"]][x] <- NA
+          map_list[["h2_a"]] <- factor(map_list[["h2_a"]])
+          objfun <- TMB::MakeADFun(
+            mod_data,
+            parameters,
+            map = map_list,
+            DLL = "sing_asc_lmm",
+            method = NULL,
+            silent = TRUE
+          )
+          optres <- lmm_optim(objfun, ...)
+          converge <- (optres[["convergence"]] == 0)
 
-        # Gather LRT results
-        neg_hess_ll <-
-          Matrix::Matrix(objfun[["he"]](objfun[["env"]]$last.par.best))
-        min_ev_neg_hess_ll <-
-          min(eigen(neg_hess_ll, only.values = TRUE)[["values"]])
-        sv_neg_hess_ll <- svd(neg_hess_ll)[["d"]]
-        rcond_neg_hess_ll <- min(sv_neg_hess_ll) / max(sv_neg_hess_ll)
-        theta_gr <- objfun[["gr"]](objfun[["env"]]$last.par.best)
-        max_abs_grad <- max(abs(theta_gr))
-        scaled_grad <- as.numeric(
-          theta_gr %*% Matrix::solve(neg_hess_ll) %*% t(theta_gr)
-        )
-        lr_X2 <- 2 * (-private$optres[["objective"]] + optres[["objective"]])
-        df_X2 <- 1
-        p_X2 <- ifelse(
-          abs(lr_X2) < sqrt(.Machine[["double.eps"]]),
-          1,
-          0.5 * pchisq(lr_X2, df_X2, lower.tail = FALSE)
-        )
+          # Gather LRT results
+          neg_hess_ll <-
+            Matrix::Matrix(objfun[["he"]](objfun[["env"]]$last.par.best))
+          min_ev_neg_hess_ll <-
+            min(eigen(neg_hess_ll, only.values = TRUE)[["values"]])
+          sv_neg_hess_ll <- svd(neg_hess_ll)[["d"]]
+          rcond_neg_hess_ll <- min(sv_neg_hess_ll) / max(sv_neg_hess_ll)
+          theta_gr <- objfun[["gr"]](objfun[["env"]]$last.par.best)
+          max_abs_grad <- max(abs(theta_gr))
+          scaled_grad <- as.numeric(
+            theta_gr %*% Matrix::solve(neg_hess_ll) %*% t(theta_gr)
+          )
+          lr_X2 <- 2 * (-private$optres[["value"]] + optres[["value"]])
+          df_X2 <- 1
+          p_X2 <- ifelse(
+            abs(lr_X2) < sqrt(.Machine[["double.eps"]]),
+            1,
+            0.5 * pchisq(lr_X2, df_X2, lower.tail = FALSE)
+          )
 
-        data.table(
-          h_0 = if (length(h2_a_parms) == 1) {
-            "h2_a = 0"
-          } else {
-            paste0("h2_a.", x, " = 0")
-          },
-          converge,
-          max_abs_grad,
-          scaled_grad,
-          min_ev_neg_hess_ll,
-          rcond_neg_hess_ll,
-          lr_X2,
-          df_X2,
-          p_X2
-        )
-      }))
+          data.table(
+            h_0 = if (length(h2_a_parms) == 1) {
+              "h2_a = 0"
+            } else {
+              paste0("h2_a.", x, " = 0")
+            },
+            converge,
+            max_abs_grad,
+            scaled_grad,
+            min_ev_neg_hess_ll,
+            rcond_neg_hess_ll,
+            lr_X2,
+            df_X2,
+            p_X2
+          )
+        }))
 
-      # In cases where the optimization failed to converge, set results to
-      # missing
-      res[
-        converge != TRUE,
-        `:=`(
-          lr_X2 = NA,
-          df_X2 = NA,
-          p_X2 = NA
-        )
-      ]
+        # In cases where the optimization failed to converge, set results to
+        # missing
+        res[
+          converge != TRUE,
+          `:=`(
+            lr_X2 = NA,
+            df_X2 = NA,
+            p_X2 = NA
+          )
+        ]
+      } else {
+        res <- private$h2_a_lrts
+      }
 
       # Optional pretty printing
       if (print) {
@@ -626,11 +592,14 @@ FamLMMFit <- R6Class(
     # Data members ============================================================
 
     formula = NULL,
+    h2_a_lrts = NULL,
     lmm_data = NULL,
     objfun = NULL,
-    optfun = NULL,
     objfun_par_names = NULL,
     sd_report = NULL,
+
+    # Methods =================================================================
+
     get_non_pr_mf_idxs = function() {
       # This construct for non_pr_mf_idxs ensures that we are effectively
       # "striking out" the rows belonging to probands while otherwise
