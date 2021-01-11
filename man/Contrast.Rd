@@ -4,11 +4,11 @@
 \alias{Contrast}
 \title{Contrast estimated from an object inheriting from \code{FamModelFit}}
 \description{
-An R6 class that stores results for a contrast estimated using a
-  specified object inheriting from \code{\link{FamModelFit}}. Wald tests and
-  confidence intervals for individual rows of the contrast matrix
-  \code{L_mat} as well as an overall Wald chi-square test of the null
-  hypothesis \code{L_mat \%*\% theta_hat = m} are provided.
+An R6 class that stores results for a contrast of the form
+\eqn{L \theta - m} estimated using a specified object inheriting from
+\code{\link{FamModelFit}}. Wald tests and confidence intervals for individual
+rows of the contrast matrix as well as an overall Wald chi-square test of
+the null hypothesis \eqn{L \theta - m = 0} are provided.
 }
 \section{Methods}{
 \subsection{Public methods}{
@@ -17,7 +17,7 @@ An R6 class that stores results for a contrast estimated using a
 \item \href{#method-get_model_fit}{\code{Contrast$get_model_fit()}}
 \item \href{#method-get_L_mat}{\code{Contrast$get_L_mat()}}
 \item \href{#method-get_m}{\code{Contrast$get_m()}}
-\item \href{#method-get_L_theta_hat}{\code{Contrast$get_L_theta_hat()}}
+\item \href{#method-get_L_theta_hat_m}{\code{Contrast$get_L_theta_hat_m()}}
 \item \href{#method-get_V_L_theta_hat}{\code{Contrast$get_V_L_theta_hat()}}
 \item \href{#method-get_X2}{\code{Contrast$get_X2()}}
 \item \href{#method-get_df_X2}{\code{Contrast$get_df_X2()}}
@@ -28,6 +28,7 @@ An R6 class that stores results for a contrast estimated using a
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-new"></a>}}
+\if{latex}{\out{\hypertarget{method-new}{}}}
 \subsection{Method \code{new()}}{
 Constructs a new instance of this class.
 \subsection{Usage}{
@@ -51,6 +52,7 @@ specified.}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-get_model_fit"></a>}}
+\if{latex}{\out{\hypertarget{method-get_model_fit}{}}}
 \subsection{Method \code{get_model_fit()}}{
 Returns \code{model_fit} object.
 \subsection{Usage}{
@@ -60,6 +62,7 @@ Returns \code{model_fit} object.
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-get_L_mat"></a>}}
+\if{latex}{\out{\hypertarget{method-get_L_mat}{}}}
 \subsection{Method \code{get_L_mat()}}{
 Returns \code{L_mat}.
 \subsection{Usage}{
@@ -69,6 +72,7 @@ Returns \code{L_mat}.
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-get_m"></a>}}
+\if{latex}{\out{\hypertarget{method-get_m}{}}}
 \subsection{Method \code{get_m()}}{
 Returns \code{m}.
 \subsection{Usage}{
@@ -77,18 +81,20 @@ Returns \code{m}.
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_L_theta_hat"></a>}}
-\subsection{Method \code{get_L_theta_hat()}}{
-Returns \code{L \%*\% theta_hat}.
+\if{html}{\out{<a id="method-get_L_theta_hat_m"></a>}}
+\if{latex}{\out{\hypertarget{method-get_L_theta_hat_m}{}}}
+\subsection{Method \code{get_L_theta_hat_m()}}{
+Returns \eqn{L \hat{\theta} - m}.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Contrast$get_L_theta_hat()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Contrast$get_L_theta_hat_m()}\if{html}{\out{</div>}}
 }
 
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-get_V_L_theta_hat"></a>}}
+\if{latex}{\out{\hypertarget{method-get_V_L_theta_hat}{}}}
 \subsection{Method \code{get_V_L_theta_hat()}}{
-Returns \code{L \%*\% V_theta_hat \%*\% t(L)}.
+Returns \eqn{L \hat{V}(\hat{\theta}) L^{'}}.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Contrast$get_V_L_theta_hat()}\if{html}{\out{</div>}}
 }
@@ -96,9 +102,11 @@ Returns \code{L \%*\% V_theta_hat \%*\% t(L)}.
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-get_X2"></a>}}
+\if{latex}{\out{\hypertarget{method-get_X2}{}}}
 \subsection{Method \code{get_X2()}}{
 Returns Wald chi-square statistic for null hypothesis
-  \code{L_mat \%*\% theta_hat = m}.
+\eqn{L \theta - m = 0}, which is \eqn{(L \hat{\theta} - m)^{'}
+  [L \hat{V}(\hat{\theta}) L^{'}]^{-1} (L \hat{\theta} - m)}.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Contrast$get_X2()}\if{html}{\out{</div>}}
 }
@@ -106,8 +114,10 @@ Returns Wald chi-square statistic for null hypothesis
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-get_df_X2"></a>}}
+\if{latex}{\out{\hypertarget{method-get_df_X2}{}}}
 \subsection{Method \code{get_df_X2()}}{
-Returns degrees of freedom of Wald chi-square statistic.
+Returns degrees of freedom of Wald chi-square statistic,
+which is the rank of \eqn{L}.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Contrast$get_df_X2()}\if{html}{\out{</div>}}
 }
@@ -115,6 +125,7 @@ Returns degrees of freedom of Wald chi-square statistic.
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-get_p_X2"></a>}}
+\if{latex}{\out{\hypertarget{method-get_p_X2}{}}}
 \subsection{Method \code{get_p_X2()}}{
 Returns p-value for Wald chi-square statistic.
 \subsection{Usage}{
@@ -124,6 +135,7 @@ Returns p-value for Wald chi-square statistic.
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-print"></a>}}
+\if{latex}{\out{\hypertarget{method-print}{}}}
 \subsection{Method \code{print()}}{
 Formatted printing of the \code{Contrast} object.
 \subsection{Usage}{
@@ -133,13 +145,14 @@ Formatted printing of the \code{Contrast} object.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{...}}{Arguments passed on to \code{\link{print_ests}}.}
+\item{\code{...}}{Arguments passed on to \code{\link[=print_ests]{print_ests()}}.}
 }
 \if{html}{\out{</div>}}
 }
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-clone}{}}}
 \subsection{Method \code{clone()}}{
 The objects of this class are cloneable with this method.
 \subsection{Usage}{

@@ -1,0 +1,20 @@
+template:
+  params:
+    bootswatch: spacelab
+
+reference:
+- title: Data container classes
+- contents:
+  - FamData
+- title: Inferential classes
+- contents:
+  - Contrast
+  - FamLMMFit
+  - FamModelFit
+- title: Utility functions
+- contents:
+  - make_coef_mat
+  - print_ests
+- title: Example data
+- contents:
+  - lmna_nonseg

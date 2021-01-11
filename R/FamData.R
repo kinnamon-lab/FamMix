@@ -2,7 +2,7 @@
 
 #' Family data for modeling
 #'
-#' @description A `R6` class that stores family data and a kinship matrix.
+#' @description An R6 class that stores family data and a kinship matrix.
 #'
 #' @details Methods of this class can be used to fit regression models such as
 #'   polygenic mixed models. The class currently supports only family data with
@@ -16,7 +16,6 @@
 #'   can be returned using the [`FamData$get_var_map()`](#method-get_var_map)
 #'   method.
 #'
-#' @md
 #' @export
 FamData <- R6Class(
   "FamData",
@@ -435,21 +434,10 @@ FamData <- R6Class(
 
     #' @description Fits a linear mixed model to ascertained families
     #'
-    #' @details Fits a linear mixed model to family data assuming that the
-    #'    family has been ascertained through a single proband meeting certain
-    #'    criteria. To do this, it uses the appropriate multivariate normal
-    #'    likelihood conditional on the observed data in the proband (see
-    #'    Hopper and Mathews, 1982 and Beaty et al., 1987). Families without
-    #'    probands or more than one proband are excluded. The model assumes an
-    #'    additive polygenic effect, parameterized in terms of heritability,
-    #'    and no shared environmental effect. The heritability and total
-    #'    variance can be allowed to vary across groups of families (see
-    #'    `formula` argument), but, within each group, all founders in the
-    #'    family are assumed to be drawn from the same randomly mating
-    #'    population. See Lange (2002) and Boerwinkle et al. (1986) for
-    #'    additional details on this class of mixed models.
+    #' @details See `vignette("linear_mixed_models")` for background,
+    #'   implementation details, and references.
     #'
-    #' @param formula A [`Formula::Formula`] object describing the model for a
+    #' @param formula A [Formula::Formula()] object describing the model for a
     #'   phenotype. The formula is of the form `y ~ mean | group`, where `y`
     #'   (required) is the outcome, `mean` (optional) specifies the mean model
     #'   that includes an intercept by default, and `| group` (optional)
@@ -462,25 +450,11 @@ FamData <- R6Class(
     #'
     #' @return Returns a [`FamLMMFit`] object.
     #'
-    #' @references
-    #' Beaty TH, Liang KY, Rao DC. Robust inference for variance components
-    #'   models in families ascertained through probands: I. Conditioning on
-    #'   proband's phenotype. *Genet Epidemiol*. 1987;4(3):203-10.
-    #'   <https://doi.org/10.1002/gepi.1370040305>
-    #'
-    #' Boerwinkle E, Chakraborty R, Sing CF. The use of measured genotype
-    #'   information in the analysis of quantitative phenotypes in man. I.
-    #'   Models and analytical methods. *Ann Hum Genet* 1986;50(Pt 2):181-94.
-    #'   <https://doi.org/10.1111/j.1469-1809.1986.tb01037.x>
-    #'
-    #' Hopper JL, Mathews JD. Extensions to multivariate normal models for
-    #'   pedigree analysis. *Ann Hum Genet*. 1982;46(4):373-383.
-    #'   <https://doi.org/10.1111/j.1469-1809.1982.tb01588.x>
-    #'
-    #' Lange K. *Mathematical and statistical methods for genetic analysis*.
-    #'   2nd ed. New York: Springer; 2002.
     lmm = function(formula, ...) {
       if (!Formula::is.Formula(formula)) formula <- Formula::Formula(formula)
+      # Set Formula environment to base namespace to prevent using variables not
+      # explicitly included in data argument of model.frame
+      environment(formula) <- .BaseNamespaceEnv
       formula_dims <- length(formula)
       if (formula_dims[1] != 1) {
         stop(
@@ -537,7 +511,7 @@ FamData <- R6Class(
     # Plotting methods ========================================================
 
     #' @description For objects initialized with pedigree data, allows plotting
-    #'   of individual pedigrees using [`kinship2`].
+    #'   of individual pedigrees using [`kinship2::plot.pedigree`].
     #' @param famid Argument matching the value of a single family in the
     #'   `family_id` column used in the constructor.
     plot_pedigree = function(famid) {

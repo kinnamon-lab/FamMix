@@ -1,0 +1,473 @@
+---
+title: "Linear Mixed Models"
+header-includes:
+  - \usepackage{amsmath}
+output: html_vignette
+bibliography: FamModel.json
+vignette: >
+  %\VignetteIndexEntry{Linear Mixed Models}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+## Introduction
+
+Linear mixed models can be fit by the
+[`FamData$lmm()`](../reference/FamData.html#method-lmm) method, which produces a
+[`FamLMMFit`](../reference/FamLMMFit.html) object inheriting from the class
+[`FamModelFit`](../reference/FamModelFit.html). These models assume the standard
+multivariate normal measured genotype model [@boerwinkle1986; @lange2002] holds
+for each family in the population. The current implementation of the model
+assumes an additive polygenic effect, parameterized in terms of heritability,
+and no shared environmental effect. The heritability and total variance can be
+allowed to vary across groups of families, but, within each group, all founders
+in the family are assumed to be drawn from the same randomly mating
+population. The current implementation assumes that each family has been
+ascertained through a single proband meeting certain criteria, in which case the
+appropriate multivariate normal likelihood conditions on the observed data in
+the proband [see @hopper1982; @beaty1987]. Families without probands or more
+than one proband are therefore excluded.
+
+## Likelihood
+
+Let $\beta$ denote a vector of parameters of the mean model, $h^2_{a, q_i}$
+denote the narrow-sense heritability for a randomly mating population $q_i$, and
+$\sigma_{q_i}$ denote the square root of the total trait variance in this
+population. When convenient, these will be referred to collectively by $\theta =
+\left\{\beta, h^2_a, \sigma\right\}$, where $h^2_a$ and $\sigma$ are the sets of
+population-specific parameters necessary to describe the populations of all
+families in the model. For a family $i$ randomly selected from the population,
+the joint distribution of the quantitative traits, $\mathbf{y}_i$, conditional
+on the variables $\mathbf{X}_i$ and the randomly mating population $q_i$ to
+which all family founders belong is:
+
+\begin{gather}
+\mathbf{y}_i | \mathbf{X}_i, q_i; \theta \sim
+  MVN \left( \mu_i, \Sigma_i \right) \\
+\mu_i = \mathbf{X}_i\beta \\
+\Sigma_i = 2\Phi_i h^2_{a, q_i} \sigma^2_{q_i} +
+  \mathbf{I} \left( 1 - h^2_{a, q_i} \right) \sigma^2_{q_i}
+\label{eq:popdist}
+\tag{1}
+\end{gather}
+
+where $MVN\left(\mu, \Sigma\right)$ denotes the multivariate normal distribution
+with mean vector $\mu$ and covariance matrix $\Sigma$ and $\Phi_i$ is the
+kinship matrix for the family structure.
+
+When a family is ascertained through a proband meeting certain conditions, valid
+inferences for the population parameters $\theta$ can be obtained by using the
+distribution of the quantitative traits in family members conditional on the
+proband's [see @hopper1982; @beaty1987]. Let $m_i$ be the number of individuals
+in family $i$ included in the model, $j_i \in \{1, ..., m_i\}$ be the index of
+the proband, and $(-j_i)$ denote the indexes of all non-proband individuals in
+their original order. For example, if $j_i = 3$, we have $\mathbf{y}_{i (-j_i)}
+= \left[y_{i1}, y_{i2}, y_{i4}, ..., y_{i m_i}\right]^{'}$. Using this notation,
+we can write the appropriate conditional distribution as:
+
+\begin{gather}
+\mathbf{y}_{i(-j_i)} | y_{i j_i}, \mathbf{X}_i, q_i; \theta \sim
+  MVN\left(\eta_i, \Omega_i \right) \\
+\eta_i = \mathbf{X}_{i (-j_i)}\beta +
+  \Sigma_{i(-j_i)j_i} \Sigma_{i j_i j_i}^{-1}
+  \left(y_{i j_i} - \mathbf{x}_{i j_i} \beta \right) \\
+\Omega_i = \Sigma_{i(-j_i)(-j_i)} -
+  \Sigma_{i(-j_i)j_i} \Sigma_{i j_i j_i}^{-1} \Sigma_{i j_i (-j_i)}
+\tag{2}
+\label{eq:conddist}
+\end{gather}
+
+To avoid confusion with the skipped index $j_i$, we introduce a new index $k \in
+\{1, ..., m_i - 1\}$ that numbers non-proband individuals in family $i$ in their
+order of appearance in $\mathbf{y}_{i(-j_i)}$, $\eta_i$, and $\Omega_i$.
+
+Provided that the population of families is essentially infinite, the
+probability of the same individual being sampled in two families is zero, and
+the conditional probability of the sample of $N$ families is the product of the
+conditional densities from (\\ref{eq:conddist}). Denoting each density from
+(\\ref{eq:conddist}) by $f\left(\mathbf{y}_{i(-j_i)} | y_{i j_i}, \mathbf{X}_i,
+q_i; \theta\right)$, the conditional likelihood is:
+
+\begin{equation}
+L\left(\theta\right)
+  = f\left(\mathbf{y}_{\mathrm{np}} | \mathbf{y}_{\mathrm{p}}, \mathbf{X},
+    \mathbf{q}; \theta \right)
+  = \prod_{i=1}^N f\left(\mathbf{y}_{i(-j_i)} | y_{i j_i}, \mathbf{X}_i, q_i;
+    \theta \right)
+\tag{3}
+\label{eq:condlik}
+\end{equation}
+
+where $\mathbf{y}_{\mathrm{np}} = \left[\mathbf{y}^{'}_{1(-j_1)}, ...,
+\mathbf{y}^{'}_{N(-j_N)}\right]^{'} = \left[\mathbf{y}^{'}_{\mathrm{np},1}, ...,
+\mathbf{y}^{'}_{\mathrm{np},N}\right]^{'}$, $\mathbf{y}_{\mathrm{p}} =
+\left[y_{1 j_1}, ..., y_{N j_N}\right]^{'}$, $\mathbf{X} =
+\left[\mathbf{X}^{'}_1 \mid ... \mid \mathbf{X}^{'}_N\right]^{'}$, and
+$\mathbf{q} = \left[q_1, ..., q_N\right]^{'}$.
+
+## Optimization
+
+From the definition of conditional probability, we can restate the conditional
+likelihood in (\\ref{eq:condlik}) in a more convenient form for
+optimization. Letting $f\left(\mathbf{y}_{i} | \mathbf{X}_i, q_i; \theta
+\right)$ denote the joint density from (\\ref{eq:popdist}) and
+$f\left(y_{i j_i} | \mathbf{x}_{i j_i}, q_i; \theta \right)$ denote the marginal
+$N\left(\mathbf{x}_{i j_i} \beta, \Sigma_{i j_i j_i}\right)$ density of
+$y_{i j_i}$ obtained from this joint density, our objective is to maximize the
+loglikelihood:
+
+\begin{equation}
+\begin{split}
+l\left(\theta\right) &=
+  \sum_{i=1}^N \ln f\left(\mathbf{y}_{i(-j_i)} | y_{i j_i}, \mathbf{X}_i, q_i;
+  \theta \right) \\
+&= \sum_{i=1}^{N} \left(
+  \ln f\left(\mathbf{y}_{i} | \mathbf{X}_i, q_i; \theta\right) -
+  \ln f\left(y_{i j_i} | \mathbf{x}_{i j_i}, q_i; \theta\right)
+  \right)
+\end{split}
+\tag{4}
+\label{eq:loglik}
+\end{equation}
+
+with respect to $\theta$. Let $g(\theta)$ and $H(\theta)$ be the analytic
+gradient and Hessian of the loglikelihood (\\ref{eq:loglik}) evaluated at
+$\theta$. The `optim()` L-BFGS-B optimizer is used to minimize the _negative_ of
+(\\ref{eq:loglik}) with analytic $-g(\theta)$ calculated rapidly using the `TMB`
+package. The $\beta$ parameters in $\theta$ are unconstrained, but the $h^2_a$
+and $\sigma$ parameters are constrained to lie within $[0,1]$ and $(0, \infty)$,
+respectively. Note that $\sigma$, rather than $\sigma^2$, is used to make its
+scale more comparable with the $\beta$ parameters and avoid an ill-conditioned
+Hessian.
+
+To minimize potential numerical issues, we use an affine transformation of the
+parameters $\theta$ by a diagonal matrix $D$ and perform optimization on
+$D\theta$. The matrix $D$ is the chosen so that the diagonal elements of the
+Hessian approximation in the L-BFGS-B algorithm will be approximately 1, as
+suggested by @fletcher2000 [p. 59]. In particular, $D =
+\mathrm{diag}\left(\sqrt{-H_{11}(\theta_0)}, ...,
+\sqrt{-H_{pp}(\theta_0)}\right)$, where $\mathrm{diag}$ indicates a (block)
+diagonal matrix with zeros off the main (block) diagonal and $\theta_0$ is the
+vector of initial parameter estimates. This affine transformation should also
+yield a more spherical trust region in the transformed parameter space
+[@nocedal2006, pp. 95-7]. If any of the $\sqrt{-H_{ii}(\theta_0)}$ are infinite
+or invalid, $D$ defaults to the identity matrix. Otherwise, any elements of $D$
+that are $<\sqrt{\epsilon}$, where $\epsilon$ is the double-precision
+floating-point epsilon, are set to the minimum of other $D$ elements greater
+than or equal to this quantity. The objective function value is scaled by the
+inverse of its value at $\theta_0$ because the stopping criteria are not scale
+invariant [@zhu1997]. Default stopping criteria are a relative reduction in the
+objective function of <1e-10 or a maximum absolute projected gradient element
+$<\sqrt{\epsilon}$. These tolerances, but not scaling choices, can be overriden
+by the user.
+
+The [`FamLMMFit$print()`](../reference/FamLMMFit.html#method-print) method
+provides optimization diagnostics, including the covergence status and message
+from `optim()`. To identify potential issues with conditioning that might affect
+optimization or covariance matrix estimation, the smallest eigenvalue and
+recpirocal condition number of $-H(\hat{\theta})$ at the solution $\hat{\theta}$
+are provided. Convergence measures are also provided, including the maximum
+absolute element of the loglikelihood gradient at the solution, $\lVert
+g(\hat{\theta}) \rVert_\infty$, and the scaled gradient criterion
+$-g(\hat{\theta})^{'} H(\hat{\theta})^{-1} g(\hat{\theta})$ recommended by
+@belsley1980. The first of these is not invariant to parameter scaling, and both
+of these may differ substantially from zero when the solution is on the boundary
+for one or more parameters.
+
+## Inference
+
+The Hessian of the negative loglikelihood evaluated at the maximum likelihood
+estimates, $-H(\hat{\theta})$, is also the observed information matrix, and the
+estimated covariance matrix of the parameter estimates, $\hat{V}(\hat{\theta})$,
+is obtained as its inverse.  Wald tests and confidence intervals using the
+standard normal distribution are produced for the $\beta$ parameters by the
+[`FamLMMFit$print()`](../reference/FamLMMFit.html#method-print) method, and Wald
+tests and confidence intervals for general linear contrasts of the form
+$L\theta - m = 0$ can be obtained with the inherited
+[`FamLMMFit$contrast()`](../reference/FamModelFit.html#method-contrast) method,
+which produces a [`Contrast`](../reference/Contrast.html) object. Wald tests and
+confidence intervals for each row of $L\theta - m$ are calculated using the
+standard normal distribution, and an overall Wald chi-square test of the null
+hypothesis $L\theta - m = 0$ with df equal to $\mathrm{rank}(L)$ are
+provided. These results can be displayed with the
+[`Contrast$print()`](../reference/Contrast.html#method-print) method.
+
+Likelihood ratio tests that each $h^2_{a, q_i} = 0$ are performed automatically
+on the first call to the
+[`FamLMMFit$print()`](../reference/FamLMMFit.html#method-print), which calls the
+[`FamLMMFit$get_h2_a_lrts()`](../reference/FamLMMFit.html#method-get_h2_a_lrts)
+method. The latter method can also be called directly to obtain printed output
+and/or a `data.table` for further manipulation. The same Hessian and convergence
+diagnostics described above are supplied for each constrained maximization under
+the null. As these null hypotheses are on the boundary of the parameter space,
+the mixture distribution $\frac{1}{2}\chi^2_0 + \frac{1}{2}\chi^2_1$ is used for
+the p-value [@self1987]. After the first call to
+[`FamLMMFit$get_h2_a_lrts()`](../reference/FamLMMFit.html#method-get_h2_a_lrts),
+the likelihood ratio test results are cached in the
+[`FamLMMFit`](../reference/FamLMMFit.html) object to avoid redundant
+evaluations.
+
+## Residuals and Diagnostics
+
+A `data.table` containing individual observations along with a full complement
+of residuals and diagnostics described in greater detail below can be obtained
+using the
+[`FamLMMFit$get_model_res()`](../reference/FamLMMFit.html#method-get_model_res)
+method.
+
+We define the following residuals for non-proband members of family $i$:
+
+\begin{equation}
+\begin{split}
+\mathbf{r}_i &= \mathbf{y}_{\mathrm{np}, i} - \eta_i \\
+\mathbf{r}_{\mathrm{s}, i} &= \mathbf{S}_i^{-1} \mathbf{r}_i \\
+\mathbf{r}_{\mathrm{c}, i} &= \mathbf{L}_i^{-1} \mathbf{r}_i
+\end{split}
+\end{equation}
+
+where $\mathbf{S}_i = \left[\sqrt{\Omega_{ikk}}\right]_{k = 1}^{m_i - 1}$ and
+$\mathbf{L}_i$ is the lower Cholesky factor of $\Omega_i$ such that
+$\mathbf{L}_i \mathbf{L}_i^{'} = \Omega_i$ [@harville1997]. If the assumed model
+is correctly specified, we obtain with known $\theta$ that:
+
+\begin{equation}
+\begin{split}
+\mathbf{r}_i \mid y_{i j_i}, \mathbf{X}_i, q_i; \theta &\sim
+  MVN\left( \mathbf{0}, \Omega_i\right) \\
+\mathbf{r}_{\mathrm{s}, i} \mid y_{i j_i}, \mathbf{X}_i, q_i; \theta &\sim
+  MVN\left( \mathbf{0}, \Psi_i\right) \\
+\mathbf{r}_{\mathrm{c}, i} \mid y_{i j_i}, \mathbf{X}_i, q_i; \theta &\sim
+  MVN\left( \mathbf{0}, \mathbf{I} \right)
+\end{split}
+\end{equation}
+
+and $\Psi_i$ is a correlation matrix. $\mathbf{r}_{\mathrm{s}, i}$ is the vector
+of Pearson-type residuals. Each element $r_{\mathrm{s}, ik}$ of
+$\mathbf{r}_{\mathrm{s}, i}$ is marginally standard normal if the model is
+correctly specified and $\theta$ is known, although its elements are not
+independent for members of the same family. $\mathbf{r}_{\mathrm{c}, i}$ is the
+vector of Cholesky residuals with elements $r_{\mathrm{c}, ik}$, which are
+independent standard normal random variables if the model is correctly specified
+and $\theta$ is known. Note that all types of residual vectors are independent
+across families with $\theta$ known.
+
+A family-level goodness-of-fit statistic [@hopper1982; @beaty1987] can be
+defined from the Cholesky residual vector.  The sum of the squares of these
+residuals for family $i$ is given by the inner product:
+
+\begin{equation}
+c_i^{*} = \mathbf{r}_{\mathrm{c}, i}^{'} \mathbf{r}_{\mathrm{c}, i}
+= \mathbf{r}_i^{'} \left(\mathbf{L}^{-1}_i\right)^{'}
+  \mathbf{L}_i^{-1} \mathbf{r}_i
+= \mathbf{r}_i^{'}
+  \left(\mathbf{L}_i \mathbf{L}_i^{'}\right)^{-1}
+  \mathbf{r}_i
+= \mathbf{r}_i^{'} \Omega_i^{-1} \mathbf{r}_i
+\end{equation}
+
+Because the Cholesky residuals are independent standard normal both within and
+between families when the model is correct and $\theta$ is known, the $c_i^{*}$
+are independent $\chi^2_{m_i-1}$, and the $p_{c_i^{*}} =
+\mathrm{Pr}\left(c_i^{*} \geq \chi^2_{m_i-1}\right)$ are independent standard
+uniform across families.
+
+Hopper and Mathews [-@hopper1982] suggested another type of goodness-of-fit
+statistic to identify individuals who are outliers relative to their pedigree
+that we adapt to our situation. With known parameter values and a correctly
+specified model, the preceding development shows:
+
+\begin{gather}
+r_{ik} \mid \mathbf{r}_{i(-k)}, y_{i j_i}, \mathbf{X}_i, q_i; \theta \sim
+  N\left(
+    \Omega_{i k (-k)} \Omega_{i (-k) (-k)}^{-1} \mathbf{r}_{i(-k)},
+    \Omega^{*}_{ikk}
+  \right) \\
+\Omega^{*}_{ikk} = \Omega_{ikk} -
+  \Omega_{i k (-k)} \Omega_{i (-k) (-k)}^{-1} \Omega_{i (-k) k}
+\end{gather}
+
+As a result, we define $r^{*}_{ik} = \left( r_{ik} - \Omega_{i k (-k)} \Omega_{i
+(-k) (-k)}^{-1} \mathbf{r}_{i(-k)} \right) / \sqrt{\Omega^{*}_{ikk}}$, which
+are marginally standard normal and independent in individuals from different
+families, although not in individuals from the same family, if the model is
+correct and $\theta$ is known [@hopper1982].
+
+To take advantage of sparse matrix computations from the `Matrix` package for
+efficiency, we calculate residuals and related diagnostics by working with
+$\mathbf{r} = \left[\mathbf{r}^{'}_1, ... \mathbf{r}^{'}_N\right]^{'}$,
+$\mathbf{S} = \mathrm{diag}\left(\mathbf{S}_1, ..., \mathbf{S}_N\right)$, and
+$\Omega = \mathrm{diag}\left(\Omega_1, ..., \Omega_N\right)$. Let $\mathbf{L}$
+be the lower Cholesky factor of $\Omega$. Using the [block form of Cholesky
+factorization](http://www.netlib.org/utk/papers/factor/node9.html), it follows
+by induction that $\mathbf{L} = \mathrm{diag}\left(\mathbf{L}_1, ...,
+\mathbf{L}_N\right)$. We can then calculate Pearson-type and Cholesky residual
+vectors efficiently as:
+
+\begin{equation}
+\begin{split}
+\mathbf{r}_{\mathrm{s}} &= \mathbf{S}^{-1} \mathbf{r}
+  = \begin{bmatrix}
+    \mathbf{S}_1^{-1} \mathbf{r}_1 \\ ... \\ \mathbf{S}_N^{-1} \mathbf{r}_N
+  \end{bmatrix}
+  = \begin{bmatrix}
+    \mathbf{r}_{\mathrm{s}, 1} \\ ... \\ \mathbf{r}_{\mathrm{s}, N}
+  \end{bmatrix} \\
+\mathbf{r}_{\mathrm{c}} &= \mathbf{L}^{-1} \mathbf{r}
+  = \begin{bmatrix}
+    \mathbf{L}_1^{-1} \mathbf{r}_1 \\ ... \\ \mathbf{L}_N^{-1} \mathbf{r}_N
+  \end{bmatrix}
+  = \begin{bmatrix}
+    \mathbf{r}_{\mathrm{c}, 1} \\ ... \\ \mathbf{r}_{\mathrm{c}, N}
+  \end{bmatrix}
+\end{split}
+\end{equation}
+
+A similar shortcut can be used to obtain the vector of $r^{*}_{ik}$ for all $i$
+and $k$. Suppose that individual $k$ in family $i$ appears in row $l$ of
+$\mathbf{r}$ and row and column $l$ of $\Omega$. Let $\mathbf{P}$ be the
+permutation that moves row $l$ to the first row, the rows for all other
+non-proband family members family $i$ to rows $2, ..., m_i - 1$, and leaves all
+other rows in their original order. Define:
+
+\begin{equation}
+\Gamma
+= \mathbf{P} \Omega \mathbf{P}^{'}
+= \begin{bmatrix}
+    \mathbf{p}_1 \\ \mathbf{P}_2 \\ \mathbf{P}_3
+  \end{bmatrix}
+  \Omega
+  \begin{bmatrix}
+    \mathbf{p}_1^{'} & \mathbf{P}_2^{'} & \mathbf{P}_3^{'}
+  \end{bmatrix}
+= \begin{bmatrix}
+    \mathbf{p}_{1} \Omega \mathbf{p}_1^{'} &
+      \mathbf{p}_{1} \Omega \mathbf{P}_2^{'} &
+      \mathbf{p}_{1} \Omega \mathbf{P}_3^{'} \\
+    \mathbf{P}_{2} \Omega \mathbf{p}_1^{'} &
+      \mathbf{P}_{2} \Omega \mathbf{P}_2^{'} &
+      \mathbf{P}_{2} \Omega \mathbf{P}_3^{'} \\
+    \mathbf{P}_{3} \Omega \mathbf{p}_1^{'} &
+      \mathbf{P}_{3} \Omega \mathbf{P}_2^{'} &
+      \mathbf{P}_{3} \Omega \mathbf{P}_3^{'}
+  \end{bmatrix}
+= \begin{bmatrix}
+    \Omega_{ikk} & \Omega_{ik(-k)} & \mathbf{0} \\
+    \Omega_{i(-k)k} & \Omega_{i(-k)(-k)} & \mathbf{0} \\
+    \mathbf{0} & \mathbf{0} & \Omega_{(-i)}
+  \end{bmatrix}
+\end{equation}
+
+the reordered covariance matrix with individual $l$ occupying element $(1, 1)$
+and the non-proband members of the family of individual $l$ occuping the upper
+left $(m_i - 1) \times (m_i - 1)$ block.  The inverse of this matrix can be
+obtained by results on block diagonal matrices and Theorem 8.5.11 of Harville
+[-@harville1997]:
+
+\begin{equation}
+\Gamma^{-1} =
+  \begin{bmatrix}
+    1 / \Omega_{ikk}^{*} &
+      -\Omega_{ik(-k)} \Omega_{i(-k)(-k)}^{-1}  / \Omega_{ikk}^{*} &
+      \mathbf{0} \\
+    -\Omega_{i(-k)(-k)}^{-1} \Omega_{i(-k)k}  / \Omega_{ikk}^{*} &
+      \Omega_{i(-k)(-k)}^{-1} +
+        \Omega_{i(-k)(-k)}^{-1} \Omega_{i(-k)k} \Omega_{ik(-k)}
+        \Omega_{i(-k)(-k)}^{-1} / \Omega_{ikk}^{*} &
+      \mathbf{0} \\
+    \mathbf{0} & \mathbf{0} & \Omega_{(-i)}^{-1}
+  \end{bmatrix}
+\end{equation}
+
+Because $\Gamma^{-1} = \mathbf{P} \Omega^{-1} \mathbf{P}^{'}$, we also have
+that:
+
+\begin{equation}
+\Omega^{-1} \mathbf{r}
+= \mathbf{P}^{'} \mathbf{P} \Omega^{-1} \mathbf{P}^{'} \mathbf{P} \mathbf{r}
+= \mathbf{P}^{'} \Gamma^{-1} \mathbf{P} \mathbf{r}
+= \mathbf{P}^{'} \Gamma^{-1}
+  \begin{bmatrix}
+    r_{ik} \\ \mathbf{r}_{i(-k)} \\ \mathbf{r}_{(-i)}
+  \end{bmatrix}
+= \mathbf{P}^{'}
+  \begin{bmatrix}
+    \frac{
+      r_{ik} - \Omega_{ik(-k)} \Omega_{i(-k)(-k)}^{-1} \mathbf{r}_{i(-k)}
+    }{ \Omega_{ikk}^{*} } \\
+    ...
+   \end{bmatrix}
+= \mathbf{P}^{'}
+  \begin{bmatrix}
+    \frac{r^{*}_{ik}}{\sqrt{\Omega_{ikk}^{*}}} \\
+    ...
+   \end{bmatrix}
+\end{equation}
+
+This implies that row $l$ of $\Omega^{-1} \mathbf{r}$ contains $r^{*}_{ik} /
+\sqrt{\Omega_{ikk}^{*}}$, the goodness-of-fit statistic for the individual in
+row $l$ of $\mathbf{r}$ scaled by the square root of the individual's variance.
+The preceding development also shows that $1 / \Omega_{ikk}^{*}$ can be found in
+element $l$ of the diagonal of $\Omega^{-1}$ because $\mathbf{p}_{1} \Omega^{-1}
+\mathbf{p}_1^{'} = 1 / \Omega_{ikk}^{*}$. Letting $\mathbf{T} =
+\mathrm{diag}\left(\left[\left[\sqrt{\Omega^{-1}_{ikk}}\right]_{k = 1}^{m_i -
+1}\right]_{i = 1}^{N}\right)$, we can obtain the vector of $r^{*}_{ik}$ with
+indexes in the same order as $\mathbf{r}$ as:
+
+\begin{equation}
+\mathbf{r}^* =
+  \mathbf{T}^{-1} \Omega^{-1} \mathbf{r}
+\end{equation}
+
+which involves a single inversion of a sparse block diagonal matrix and a single
+solution of a sparse linear system.
+
+In practice, unknown parameters in $\theta$ are replaced by their maximum
+likelihood estimates, $\hat{\theta}$. We denote estimated residuals where this
+has occurred by a superscript "hat" going forward. Consider the estimated
+residuals and diagnostics for an arbitrary family $i$. Because $\hat{\theta}
+\overset{p}{\longrightarrow} \theta$ by the properties of maximum likelihood
+estimates, we have from the Continuous Mapping Theorem [@vandervaart2007] that
+$\hat{\mathbf{r}}_i - \mathbf{r}_i = \eta_i - \hat{\eta}_i
+\overset{p}{\longrightarrow} \mathbf{0}$. Further applications of the Continuous
+Mapping Theorem imply that $\hat{\mathbf{r}}_{\mathrm{s}, i}
+\overset{p}{\longrightarrow} \mathbf{r}_{\mathrm{s}, i}$,
+$\hat{\mathbf{r}}_{\mathrm{c}, i} \overset{p}{\longrightarrow}
+\mathbf{r}_{\mathrm{c}, i}$, $\hat{c}^{*}_i \overset{p}{\longrightarrow}
+c^{*}_i$, $\hat{p}_{\hat{c}^{*}_i} \overset{p}{\longrightarrow} p_{c^{*}_i}$,
+and $\hat{\mathbf{r}}^{*}_i \overset{p}{\longrightarrow}
+\mathbf{r}^{*}_i$. Convergence in probability for each family's component
+implies joint convergence in probability of the vector of stacked components
+[@vandervaart2007, Theorem 2.7(vi)], so we can conclude that $\hat{\mathbf{r}}
+\overset{p}{\longrightarrow} \mathbf{r}$, $\hat{\mathbf{r}}_{\mathrm{s}}
+\overset{p}{\longrightarrow} \mathbf{r}_{\mathrm{s}}$,
+$\hat{\mathbf{r}}_{\mathrm{c}} \overset{p}{\longrightarrow}
+\mathbf{r}_{\mathrm{c}}$, $\hat{\mathbf{c}}^{*} = \left[\hat{c}^{*}_1, ...,
+\hat{c}^{*}_N\right]^{'} \overset{p}{\longrightarrow} \left[c^{*}_1, ...,
+c^{*}_N\right]^{'} = \mathbf{c}^{*}$, $\hat{\mathbf{p}}_{\hat{\mathbf{c}}^{*}} =
+\left[\hat{p}_{\hat{c}^{*}_1}, ..., \hat{p}_{\hat{c}^{*}_N}\right]^{'}
+\overset{p}{\longrightarrow} \left[p_{c^{*}_1}, ..., p_{c^{*}_N}\right]^{'} =
+\mathbf{p}_{\mathbf{c}^{*}}$, and $\hat{\mathbf{r}}^{*}
+\overset{p}{\longrightarrow} \mathbf{r}^{*}$ As a result, the estimated
+quantities will have sampling distributions that can be approximated by those
+of the true quantities in sufficiently large samples.
+
+For true quantities where the multivariate distribution comprises independent
+and identically distributed components, goodness of fit can be assessed visually
+using a quantile-quantile (QQ) plot of the estimated components against the
+corresponding quantiles of the theoretical distribution. For example, ordered
+Cholesky residuals can be plotted against the corresponding expected order
+statistics for a sample of the same size from the standard normal
+distribution. It is important to note, however, that neither standard confidence
+limits for quantile-quantile plots nor standard goodness-of-fit statistics
+correctly reflect the sampling variability of the empirical distribution
+function (EDF) of these estimated quantities. For example, Houseman et
+al. [-@houseman2004] established that the scaled difference between the
+empirical distribution function of the estimated Cholesky residuals and the
+standard normal cumulative distribution function (CDF) converges pointwise to a
+mean-zero normal random variable with variance differing from the standard
+$\Phi\left(t\right)\left(1 - \Phi\left(t\right)\right)$. Thus, while the
+convergence in probability of the EDF to the CDF still holds and allows for
+comparison with the identity line on the QQ plot, unmodified confidence limits
+or goodness-of-fit tests may yield misleading inferences.
+
+## References

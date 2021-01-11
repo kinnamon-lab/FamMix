@@ -28,17 +28,18 @@ tests and standard errors are still on the untransformed scale.}
 
 \item{SEs}{\code{TRUE} (default) if standard errors should be reported.}
 
-\item{CIs}{\code{TRUE} (default) if 100*(1 - alpha)\% CIs should be reported.}
+\item{CIs}{\code{TRUE} (default) if \eqn{100(1 - \alpha)}\% CIs should be
+reported.}
 
-\item{tests}{\code{TRUE} (default) if Wald test statistics and p-values based
+\item{tests}{\code{TRUE}(default) if Wald test statistics and p-values based
 on the normal distribution should be reported.}
 }
 \value{
 A \code{matrix} with row names given by the names of \code{theta_hat}
-  containing the requested columns.
+containing the requested columns.
 }
 \description{
-Make coefficient matrix containing estimates, standard errors, 100*(1 -
-alpha)\% CIs, Z statistics, and p-values given an input vector of parameter
-estimates and their standard errors.
+Make coefficient matrix containing estimates, standard errors,
+\eqn{100(1 - \alpha)}\% CIs, Z statistics, and p-values given an input
+vector of parameter estimates and their standard errors.
 }

@@ -2,23 +2,24 @@
 
 #' Make coefficient matrix
 #'
-#' Make coefficient matrix containing estimates, standard errors, 100*(1 -
-#' alpha)\% CIs, Z statistics, and p-values given an input vector of parameter
-#' estimates and their standard errors.
+#' Make coefficient matrix containing estimates, standard errors,
+#' \eqn{100(1 - \alpha)}% CIs, Z statistics, and p-values given an input
+#' vector of parameter estimates and their standard errors.
 #'
 #' @param theta_hat A named vector of parameter estimates.
 #' @param V_theta_hat The covariance matrix of the parameter estimates in
-#'   \code{theta_hat}.
-#' @param trans A function accepting a single argument (e.g., \code{exp}) that
+#'   `theta_hat`.
+#' @param trans A function accepting a single argument (e.g., `exp`) that
 #'   is used to transform parameter estimates and confidence intervals. All
 #'   tests and standard errors are still on the untransformed scale.
 #' @param alpha The alpha level for the confidence intervals; default 0.05.
-#' @param SEs \code{TRUE} (default) if standard errors should be reported.
-#' @param CIs \code{TRUE} (default) if 100*(1 - alpha)\% CIs should be reported.
-#' @param tests \code{TRUE} (default) if Wald test statistics and p-values based
+#' @param SEs `TRUE` (default) if standard errors should be reported.
+#' @param CIs `TRUE` (default) if \eqn{100(1 - \alpha)}% CIs should be
+#'   reported.
+#' @param tests `TRUE`(default) if Wald test statistics and p-values based
 #'   on the normal distribution should be reported.
 #'
-#' @return A \code{matrix} with row names given by the names of \code{theta_hat}
+#' @return A `matrix` with row names given by the names of `theta_hat`
 #'   containing the requested columns.
 #'
 #' @export
@@ -65,15 +66,15 @@ make_coef_mat <- function(theta_hat, V_theta_hat, trans, alpha = 0.05,
 
 #' Print parameter estimates
 #'
-#' Prints estimates, standard errors, 100*(1 - alpha)\% CIs, test statistics,
-#' and p-values to the console given a vector of estimates and their covariance
-#' matrix. May also specify a function to transform the estimates and 95% CIs.
-#' Uses \code{\link{make_coef_mat}} for underlying calculations.
+#' Prints estimates, standard errors, \eqn{100(1 - \alpha)}% CIs, test
+#' statistics, and p-values to the console given a vector of estimates and their
+#' covariance matrix. May also specify a function to transform the estimates and
+#' 95% CIs.  Uses [make_coef_mat()] for underlying calculations.
 #'
 #' @param theta_hat A named vector of parameter estimates.
 #' @param V_theta_hat The covariance matrix of the parameter estimates in
-#'   \code{theta_hat}.
-#' @param trans A function accepting a single argument (e.g., \code{exp}) that
+#'   `theta_hat`.
+#' @param trans A function accepting a single argument (e.g., `exp`) that
 #'   is used to transform parameter estimates and confidence intervals. All
 #'   tests and standard errors are still on the untransformed scale.
 #' @inheritDotParams make_coef_mat
@@ -91,7 +92,7 @@ print_ests <- function(theta_hat, V_theta_hat, trans, ...) {
   coef_mat <- do.call(make_coef_mat, make_coef_mat_args)
   printCoefmat_args <- list(quote(coef_mat))
   if (!"Z value" %in% colnames(coef_mat)) {
-    printCoefmat_args$cs.ind <- 1:ncol(coef_mat)
+    printCoefmat_args$cs.ind <- seq(1, ncol(coef_mat))
     printCoefmat_args$tst.ind <- integer(0)
   }
   printCoefmat_args <- c(
@@ -122,6 +123,7 @@ print_ests <- function(theta_hat, V_theta_hat, trans, ...) {
 #'
 #' @return A `list` with optimization results. See [optim()].
 #'
+#' @noRd
 lmm_optim <- function(objfun, ...) {
   parm_lower <- rep(-Inf, length(objfun[["par"]]))
   parm_upper <- rep(Inf, length(objfun[["par"]]))

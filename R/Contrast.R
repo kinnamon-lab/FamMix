@@ -85,10 +85,12 @@ Contrast <- R6Class(
     get_V_L_theta_hat = function() private$V_L_theta_hat,
 
     #' @description Returns Wald chi-square statistic for null hypothesis
-    #'   \eqn{L \theta - m = 0}.
+    #'   \eqn{L \theta - m = 0}, which is \eqn{(L \hat{\theta} - m)^{'}
+    #'   [L \hat{V}(\hat{\theta}) L^{'}]^{-1} (L \hat{\theta} - m)}.
     get_X2 = function() private$X2,
 
-    #' @description Returns degrees of freedom of Wald chi-square statistic.
+    #' @description Returns degrees of freedom of Wald chi-square statistic,
+    #'   which is the rank of \eqn{L}.
     get_df_X2 = function() private$df_X2,
 
     #' @description Returns p-value for Wald chi-square statistic.

@@ -4,24 +4,20 @@
 \alias{FamData}
 \title{Family data for modeling}
 \description{
-A \code{R6} class that stores family data and a kinship
-  matrix. Methods of this class can then be used to fit regression models
-  such as polygenic mixed models. The class currently supports only family
-  data with one observation per subject and will check that this requirement
-  is met.
+An R6 class that stores family data and a kinship matrix.
 }
-\references{
-Beaty TH, Liang KY, Rao DC. Robust inference for variance components
-  models in families ascertained through probands: I. Conditioning on
-  proband's phenotype. \emph{Genet Epidemiol}. 1987;4(3):203-10.
+\details{
+Methods of this class can be used to fit regression models such as
+polygenic mixed models. The class currently supports only family data with
+one observation per subject and will check that this requirement is met.
 
-Boerwinkle E, Chakraborty R, Sing CF. The use of measured genotype
-  information in the analysis of quantitative phenotypes in man. I.
-  Models and analytical methods. \emph{Ann Hum Genet}.
-  1986;50(Pt 2):181-94.
-
-Lange K. \emph{Mathematical and statistical methods for genetic
-  analysis}. 2nd ed. New York: Springer; 2002.
+Note that the private \code{data} member of the instance (returned by the
+\href{#method-get_data}{\code{FamData$get_data()}} method) will always be sorted by
+ascending \code{family_id} and ascending \code{indiv_id} within \code{family_id}
+regardless of the sort order of the input data set. Also, pedigree columns
+in the input data set will be renamed in the \code{data} member; this mapping
+can be returned using the \href{#method-get_var_map}{\code{FamData$get_var_map()}}
+method.
 }
 \section{Methods}{
 \subsection{Public methods}{
@@ -29,8 +25,10 @@ Lange K. \emph{Mathematical and statistical methods for genetic
 \item \href{#method-new}{\code{FamData$new()}}
 \item \href{#method-get_data}{\code{FamData$get_data()}}
 \item \href{#method-get_data_name}{\code{FamData$get_data_name()}}
+\item \href{#method-get_consang}{\code{FamData$get_consang()}}
 \item \href{#method-get_phi}{\code{FamData$get_phi()}}
 \item \href{#method-get_var_map}{\code{FamData$get_var_map()}}
+\item \href{#method-print}{\code{FamData$print()}}
 \item \href{#method-lmm}{\code{FamData$lmm()}}
 \item \href{#method-plot_pedigree}{\code{FamData$plot_pedigree()}}
 \item \href{#method-clone}{\code{FamData$clone()}}
@@ -38,15 +36,9 @@ Lange K. \emph{Mathematical and statistical methods for genetic
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-new"></a>}}
+\if{latex}{\out{\hypertarget{method-new}{}}}
 \subsection{Method \code{new()}}{
-Constructs a new instance of this class. All constructor
-  arguments other than \code{data} \emph{must be named}. There are two
-  possible constructor signatures:
-\preformatted{
-FamData$new(data, family_id, indiv_id, proband, sex,
-            maternal_id, paternal_id, mzgrp, dzgrp)
-}
-\preformatted{FamData$new(data, family_id, indiv_id, proband, phi)}
+Constructs a new instance of this class.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{FamData$new(data, ...)}\if{html}{\out{</div>}}
 }
@@ -54,7 +46,7 @@ FamData$new(data, family_id, indiv_id, proband, sex,
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{data}}{A \code{data.frame} or \code{data.table} containing all
+\item{\code{data}}{A \code{data.frame} or \code{\link{data.table}} containing all
 phenotypes and genetic variables of interest.}
 
 \item{\code{...}}{The arguments required for a particular method signature;
@@ -67,48 +59,56 @@ character column in \code{data} containing a family identifier.}
 character column in \code{data} containing a individual identifier.}
 
 \item{\code{proband}}{Character string containing the name of a numeric column
-in \code{data} containing 1 for probands and 0 otherwise. \code{NA} is
-not permitted.}
+in \code{data} containing 1 for probands and 0 otherwise. \code{NA} is  not
+permitted.}
 
 \item{\code{sex}}{Character string containing the name of a numeric column in
 \code{data} containing the individual's sex (1 = "male", 2 = "female")
 or \code{NA} if unknown.}
 
 \item{\code{maternal_id}}{Character string containing the name of a column in
-\code{data} of the same type as \code{indiv_id} containing the
-\code{indiv_id} of the individual's mother or 0 (numeric), ""
-(character), or \code{NA} if a founder. See documentation for
-\code{\link[kinship2]{pedigree}}.}
+\code{data} of the same type as \code{indiv_id} containing the \code{indiv_id} of the
+individual's mother or 0 (numeric), "" (character), or \code{NA} if a
+founder. See documentation for \code{\link[kinship2:pedigree]{kinship2::pedigree}}.}
 
 \item{\code{paternal_id}}{Character string containing the name of a column in
-\code{data} of the same type as \code{indiv_id} containing the
-\code{indiv_id} of the individual's father or or 0 (numeric), ""
-(character), or \code{NA} if a founder. See documentation for
-\code{\link[kinship2]{pedigree}}.}
+\code{data} of the same type as \code{indiv_id} containing the \code{indiv_id} of the
+individual's father or or 0 (numeric), "" (character), or \code{NA} if a
+founder. See documentation for \code{\link[kinship2:pedigree]{kinship2::pedigree}}.}
 
 \item{\code{mzgrp}}{Character string containing the name of a numeric,
-character, or factor column in \code{data} containing the same value
-for all members of a monozygotic twin group. \code{NA} should be used
-for all individuals who are not monozygotic twins.}
+character, or factor column in \code{data} containing the same value for all
+members of a monozygotic twin group. \code{NA} should be used for all
+individuals who are not monozygotic twins.}
 
 \item{\code{dzgrp}}{Character string containing the name of a numeric,
-character, or factor column in \code{data} containing the same value
-for all members of a dizygotic twin group. \code{NA} should be used for
-all individuals who are not dizygotic twins.}
+character, or factor column in \code{data} containing the same value for all
+members of a dizygotic twin group. \code{NA} should be used for all
+individuals who are not dizygotic twins.}
 
-\item{\code{phi}}{A matrix coercible to a
-\code{\link[Matrix:dsCMatrix-class]{dsCMatrix}} containing the pairwise
-kinship coefficients for individuals. Note that \code{phi[i, j]} must
-contain the kinship coefficient between the individuals in
-\code{data[i, ]} and \code{data[j, ]}.}
+\item{\code{phi}}{A matrix coercible to a \code{\link[Matrix:dsCMatrix-class]{Matrix::dsCMatrix}} containing
+the pairwise kinship coefficients for individuals. Note that
+\code{phi[i, j]} must contain the kinship coefficient between the individuals
+in \code{data[i, ]} and \code{data[j, ]}.}
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Details}{
+All constructor arguments other than \code{data}
+\emph{must be named}. There are two possible constructor signatures:\preformatted{FamData$new(data, family_id, indiv_id, proband, sex,
+            maternal_id, paternal_id, mzgrp, dzgrp)
+
+FamData$new(data, family_id, indiv_id, proband, phi)
+}
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-get_data"></a>}}
+\if{latex}{\out{\hypertarget{method-get_data}{}}}
 \subsection{Method \code{get_data()}}{
-Returns data member.
+Returns a copy of data member (to prevent accidental
+modification of data member \code{\link{data.table}} by reference).
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{FamData$get_data()}\if{html}{\out{</div>}}
 }
@@ -116,16 +116,29 @@ Returns data member.
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-get_data_name"></a>}}
+\if{latex}{\out{\hypertarget{method-get_data_name}{}}}
 \subsection{Method \code{get_data_name()}}{
-Returns name of input \code{data.frame} or
-  \code{data.table}.
+Returns name of input \code{data.frame} or \code{\link{data.table}}.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{FamData$get_data_name()}\if{html}{\out{</div>}}
 }
 
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-get_consang"></a>}}
+\if{latex}{\out{\hypertarget{method-get_consang}{}}}
+\subsection{Method \code{get_consang()}}{
+Returns character vector containing family IDs in which
+consanguinity was found (based on individual self-kinship coefficient
+greater than 0.5).
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{FamData$get_consang()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-get_phi"></a>}}
+\if{latex}{\out{\hypertarget{method-get_phi}{}}}
 \subsection{Method \code{get_phi()}}{
 Returns kinship matrix member.
 \subsection{Usage}{
@@ -135,16 +148,29 @@ Returns kinship matrix member.
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-get_var_map"></a>}}
+\if{latex}{\out{\hypertarget{method-get_var_map}{}}}
 \subsection{Method \code{get_var_map()}}{
 Returns list mapping variable names in input data set in
-  \code{data} argument to those in data member.
+\code{data} argument to those in data member.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{FamData$get_var_map()}\if{html}{\out{</div>}}
 }
 
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-print"></a>}}
+\if{latex}{\out{\hypertarget{method-print}{}}}
+\subsection{Method \code{print()}}{
+Prints information about contents of \code{FamData} objects
+with nice formatting.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{FamData$print()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-lmm"></a>}}
+\if{latex}{\out{\hypertarget{method-lmm}{}}}
 \subsection{Method \code{lmm()}}{
 Fits a linear mixed model to ascertained families
 \subsection{Usage}{
@@ -154,33 +180,23 @@ Fits a linear mixed model to ascertained families
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{formula}}{A \code{\link[Formula]{Formula}} object describing the
-model for a phenotype. The formula is of the form
-\code{y ~ mean | group}, where \code{y} (required) is the outcome,
-\code{mean} (optional) specifies the mean model that includes an
-intercept by default, and \code{| group} (optional) specifies a factor
-term that can be used assign families to homogeneous groups with
-different variance components. Multiple variables can be combined into
-a single factor using \code{:}.}
+\item{\code{formula}}{A \code{\link[Formula:Formula]{Formula::Formula()}} object describing the model for a
+phenotype. The formula is of the form \code{y ~ mean | group}, where \code{y}
+(required) is the outcome, \code{mean} (optional) specifies the mean model
+that includes an intercept by default, and \verb{| group} (optional)
+specifies a factor term that can be used assign families to homogeneous
+groups with different variance components. Multiple variables can be
+combined into a single factor using \code{:}.}
 
-\item{\code{...}}{Additional parameters to pass to the optimization function
-(currently \code{\link{nlminb}}).}
+\item{\code{...}}{Additional parameters to pass to the \code{control} list for
+\code{\link[=optim]{optim()}} with \code{method = "L-BGFS-B"}. Note that \code{parscale} and
+\code{fnscale} cannot be modified.}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Details}{
-Fits a linear mixed model to family data assuming that the
-   family has been ascertained through a single proband meeting certain
-   criteria. To do this, it uses the appropriate multivariate normal
-   likelihood conditional on the observed data in the proband (see the
-   Beaty et al. reference). Families without probands or more than one
-   proband are excluded. The model assumes an additive polygenic effect,
-   parameterized in terms of heritability, and no shared environmental
-   effect. The heritability and total variance can be allowed to vary
-   across groups of families (see \code{formula} argument), but, within
-   each group, all founders in the family are assumed to be drawn from
-   the same randomly mating population. See the Lange and Boerwinkle et
-   al. references for additional details on this class of mixed models.
+See \code{vignette("linear_mixed_models")} for background,
+implementation details, and references.
 }
 
 \subsection{Returns}{
@@ -189,9 +205,10 @@ Returns a \code{\link{FamLMMFit}} object.
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-plot_pedigree"></a>}}
+\if{latex}{\out{\hypertarget{method-plot_pedigree}{}}}
 \subsection{Method \code{plot_pedigree()}}{
 For objects initialized with pedigree data, allows plotting
-  of individual pedigrees using \pkg{kinship2}.
+of individual pedigrees using \code{\link[kinship2:plot.pedigree]{kinship2::plot.pedigree}}.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{FamData$plot_pedigree(famid)}\if{html}{\out{</div>}}
 }
@@ -207,6 +224,7 @@ For objects initialized with pedigree data, allows plotting
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-clone}{}}}
 \subsection{Method \code{clone()}}{
 The objects of this class are cloneable with this method.
 \subsection{Usage}{

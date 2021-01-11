@@ -21,8 +21,9 @@ tests and standard errors are still on the untransformed scale.}
   \describe{
     \item{\code{alpha}}{The alpha level for the confidence intervals; default 0.05.}
     \item{\code{SEs}}{\code{TRUE} (default) if standard errors should be reported.}
-    \item{\code{CIs}}{\code{TRUE} (default) if 100*(1 - alpha)\% CIs should be reported.}
-    \item{\code{tests}}{\code{TRUE} (default) if Wald test statistics and p-values based
+    \item{\code{CIs}}{\code{TRUE} (default) if \eqn{100(1 - \alpha)}\% CIs should be
+reported.}
+    \item{\code{tests}}{\code{TRUE}(default) if Wald test statistics and p-values based
 on the normal distribution should be reported.}
     \item{\code{digits}}{minimum number of significant digits to be used for
     most numbers.}
@@ -57,8 +58,8 @@ on the normal distribution should be reported.}
   }}
 }
 \description{
-Prints estimates, standard errors, 100*(1 - alpha)\% CIs, test statistics,
-and p-values to the console given a vector of estimates and their covariance
-matrix. May also specify a function to transform the estimates and 95% CIs.
-Uses \code{\link{make_coef_mat}} for underlying calculations.
+Prints estimates, standard errors, \eqn{100(1 - \alpha)}\% CIs, test
+statistics, and p-values to the console given a vector of estimates and their
+covariance matrix. May also specify a function to transform the estimates and
+95\% CIs.  Uses \code{\link[=make_coef_mat]{make_coef_mat()}} for underlying calculations.
 }

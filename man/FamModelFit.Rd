@@ -4,14 +4,14 @@
 \alias{FamModelFit}
 \title{Abstract class for results of a fitted \code{FamModel} model}
 \description{
-An abstract R6 class defining the pattern for all
-  \code{\link{FamModelFit}} subclasses created by fitting a model to a
-  \code{\link{FamData}} object using one of its model-fitting methods.
+An abstract R6 class defining the pattern for all \code{FamModelFit}
+subclasses created by fitting a model to a \code{\link{FamData}} object using one
+of its model-fitting methods. This class provides only a default
+constructor without any initializer.
 }
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
-\item \href{#method-new}{\code{FamModelFit$new()}}
 \item \href{#method-get_data}{\code{FamModelFit$get_data()}}
 \item \href{#method-get_optres}{\code{FamModelFit$get_optres()}}
 \item \href{#method-get_theta_hat}{\code{FamModelFit$get_theta_hat()}}
@@ -22,20 +22,11 @@ An abstract R6 class defining the pattern for all
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-new"></a>}}
-\subsection{Method \code{new()}}{
-Stub constructor to prevent instantiation of this abstract
-  class.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{FamModelFit$new()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-get_data"></a>}}
+\if{latex}{\out{\hypertarget{method-get_data}{}}}
 \subsection{Method \code{get_data()}}{
-Returns the \code{\link{FamData}} object that produced this
-  model fit.
+Returns the \code{\link{FamData}} object that produced this model
+fit.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{FamModelFit$get_data()}\if{html}{\out{</div>}}
 }
@@ -43,6 +34,7 @@ Returns the \code{\link{FamData}} object that produced this
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-get_optres"></a>}}
+\if{latex}{\out{\hypertarget{method-get_optres}{}}}
 \subsection{Method \code{get_optres()}}{
 Returns \code{list} of optimization results.
 \subsection{Usage}{
@@ -52,9 +44,10 @@ Returns \code{list} of optimization results.
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-get_theta_hat"></a>}}
+\if{latex}{\out{\hypertarget{method-get_theta_hat}{}}}
 \subsection{Method \code{get_theta_hat()}}{
-Returns \code{theta_hat}, the vector of parameter
-  estimates.
+Returns \eqn{\hat{\theta}}, the vector of parameter
+estimates.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{FamModelFit$get_theta_hat()}\if{html}{\out{</div>}}
 }
@@ -62,9 +55,10 @@ Returns \code{theta_hat}, the vector of parameter
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-get_V_theta_hat"></a>}}
+\if{latex}{\out{\hypertarget{method-get_V_theta_hat}{}}}
 \subsection{Method \code{get_V_theta_hat()}}{
-Returns \code{V_theta_hat}, the covariance matrix of the
-  parameter estimates.
+Returns \eqn{\hat{V}(\hat{\theta})}, the estimated
+covariance matrix of the parameter estimates.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{FamModelFit$get_V_theta_hat()}\if{html}{\out{</div>}}
 }
@@ -72,6 +66,7 @@ Returns \code{V_theta_hat}, the covariance matrix of the
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-print"></a>}}
+\if{latex}{\out{\hypertarget{method-print}{}}}
 \subsection{Method \code{print()}}{
 Formatted printing of the \code{FamModelFit} object.
 \subsection{Usage}{
@@ -81,15 +76,16 @@ Formatted printing of the \code{FamModelFit} object.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{...}}{Arguments passed on to \code{\link{print_ests}}.}
+\item{\code{...}}{Arguments passed on to \code{\link[=print_ests]{print_ests()}}.}
 }
 \if{html}{\out{</div>}}
 }
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-contrast"></a>}}
+\if{latex}{\out{\hypertarget{method-contrast}{}}}
 \subsection{Method \code{contrast()}}{
-Create a new \code{\link{Contrast}} object.
+Create a new \code{Contrast} object.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{FamModelFit$contrast(L_mat, m)}\if{html}{\out{</div>}}
 }
@@ -107,12 +103,13 @@ specified.}
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-A \code{\link{Contrast}} object for the specified arguments and
-  this model fit.
+A \code{\link{Contrast}} object for the specified arguments and this
+model fit.
 }
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-clone}{}}}
 \subsection{Method \code{clone()}}{
 The objects of this class are cloneable with this method.
 \subsection{Usage}{

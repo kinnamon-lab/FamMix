@@ -11,7 +11,6 @@
 #'   `FamLMMFit` class can be initizalized *only from within functions in the
 #'   `FamModel` namespace*.
 #'
-#' @md
 FamLMMFit <- R6Class(
   "FamLMMFit",
   parent_env = getNamespace("FamModel"),
@@ -171,6 +170,10 @@ FamLMMFit <- R6Class(
     #' @description Returns the original data with fitted values, residuals,
     #'   and diagnostics.
     #'
+    #' @details See `vignette("linear_mixed_models")` for a detailed
+    #'   description of each residual and diagnostic, suggestions for its use,
+    #'   and relevant references.
+    #'
     #' @param all If `FALSE` (default), include only observations that
     #'   contributed to the model fit. If `TRUE`, include all observations in
     #'   the [`FamData`] object `data` member. This can be useful for
@@ -180,51 +183,30 @@ FamLMMFit <- R6Class(
     #'
     #' @return A [`data.table`] containing the `data` member of the
     #'   [`FamData`] object used to fit this model with the following
-    #'   additional columns:
-    #'   * `X_beta`: The fitted population mean.
-    #'   * `r_pop_pt`: Pearson-type population residual `(y - X_beta) / sigma`.
-    #'   * `X_beta_cond`: The mean conditional upon the data in the proband.
-    #'     These are defined for family members only and are `NA` in the
-    #'     proband.
-    #'   * `r_cholesky`: The Cholesky residuals, which are `y - X_beta_cond`
-    #'     scaled by the inverse of the Cholesky factor of the covariance matrix
-    #'     of the conditional distribution of the family members given the
-    #'     proband. These are defined for family members only and are `NA` in
-    #'     probands. If the model is correct, these should approximate
-    #'     independent standard normal random variables in large samples.
-    #'   * `r_cond_pt`: Pearson-type conditional residual
-    #'     `(y - X_beta_cond) / sigma_cond`, where `sigma_cond` is the square
-    #'     root of the diagonal of the covariance matrix of the conditional
-    #'     distribution of the family members given the proband. These are
-    #'     defined for family members only and are `NA` in the  proband.
-    #'   * `fam_X2`: Family-level chi-square goodness of fit statistic that is
-    #'     a function of the Cholesky residuals and is described in Beaty et
-    #'     al. (1987). While these are constrained to sum to the total sample
-    #'     size across families, they will behave increasingly like independent
-    #'     chi-square random variables with `fam_X2_df` as the the number of
-    #'     families grows large.
-    #'   * `fam_X2_df`: Degrees of freedom for `fam_X2`, which is equal to the
-    #'     number of non-probands in the family.
-    #'   * `fam_X2_p`: Probability of obtaining a deviate as or more extreme
-    #'     than `fam_X2` from a chi-square distribution with `fam_X2_df` degrees
-    #'     of freedom. A quantile-quantile plot of these p-values can be used
-    #'     for identifying families in which the model does not fit well.
-    #'   * `q_star`: Individual-level goodness of fit statistic that gives a
-    #'     Pearson-type residual for each non-proband from the distribution
-    #'     conditional on all other family members. These should be marginally
-    #'     standard normal and independent across families, although they will
-    #'     be correlated within families. See Hopper and Mathews (1982) for
-    #'     additional details.
-    #'
-    #' @references
-    #' Beaty TH, Liang KY, Rao DC. Robust inference for variance components
-    #'   models in families ascertained through probands: I. Conditioning on
-    #'   proband's phenotype. *Genet Epidemiol*. 1987;4(3):203-10.
-    #'   <https://doi.org/10.1002/gepi.1370040305>
-    #'
-    #' Hopper JL, Mathews JD. Extensions to multivariate normal models for
-    #'   pedigree analysis. *Ann Hum Genet*. 1982;46(4):373-383.
-    #'   <https://doi.org/10.1111/j.1469-1809.1982.tb01588.x>
+    #'   additional columns (notation defined in
+    #'   `vignette("linear_mixed_models")`):
+    #'   * `mu_hat`: The fitted population mean, \eqn{\hat{\mu}_{ij}}.
+    #'   * `eta_hat`: The mean conditional upon the data in the proband,
+    #'     \eqn{\hat{\eta}_{ij}}. These are defined for family members
+    #'     (\eqn{j \neq j_i}) only and are `NA` in the proband.
+    #'   * `r_c_hat`: The estimated Cholesky residuals,
+    #'     \eqn{\hat{r}_{\mathrm{c}, ij}}. These are defined for family members
+    #'     (\eqn{j \neq j_i}) only and are `NA` in the proband.
+    #'   * `r_s_hat`: The estimated Pearson-type conditional residuals,
+    #'     \eqn{\hat{r}_{\mathrm{s}, ij}}. These are defined for family members
+    #'     (\eqn{j \neq j_i}) only and are `NA` in the proband.
+    #'   * `c_star_hat`: Family-level chi-square goodness of fit statistic,
+    #'     \eqn{\hat{c}^{*}_{i}}. The same value is provided for each family
+    #'     member.
+    #'   * `c_star_hat_df`: Degrees of freedom for \eqn{\hat{c}^{*}_{i}}, which
+    #'     is equal to the number of non-probands in the family. The same value
+    #'     is provided for each family member.
+    #'   * `p_c_star_hat`: Probability of obtaining a deviate as or more extreme
+    #'     than  \eqn{\hat{c}^{*}_{i}}, \eqn{\hat{p}_{\hat{c}^{*}_{i}}}. The
+    #'     same value is provided for each family member.
+    #'   * `r_star_hat`: Individual-level goodness of fit statistic,
+    #'     \eqn{\hat{r}^{*}_{ij}}. These are defined for family members
+    #'     (\eqn{j \neq j_i}) only and are `NA` in the proband.
     #'
     get_model_res = function(all = FALSE) {
       if (!all %in% c(TRUE, FALSE)) {
@@ -270,29 +252,30 @@ FamLMMFit <- R6Class(
 
       # All-subject diagnostics
       y <- lmm_data[["y"]]
-      X_beta <- as.numeric(lmm_data[["X"]] %*% private$theta_hat[beta_parms])
-      r_pop <- y - X_beta
-      r_pop_pt <- r_pop / sqrt(Matrix::diag(sigma_mat))
-      if (!isTRUE(all.equal(X_beta, objfun_report[["X_beta"]]))) {
-        stop("Mismatch in X_beta between C++ and R code")
+      mu_hat <- as.numeric(lmm_data[["X"]] %*% private$theta_hat[beta_parms])
+      if (!isTRUE(all.equal(mu_hat, objfun_report[["X_beta"]]))) {
+        stop("Mismatch in mu_hat between C++ and R code")
       }
+      dx_all <- data.table(incl_ids, mu_hat)
+
+      # Sanity check of population residuals
+      r_pop <- y - mu_hat
       if (!isTRUE(all.equal(r_pop, objfun_report[["r_pop"]]))) {
         stop("Mismatch in r_pop between C++ and R code")
       }
-      dx_all <- data.table(incl_ids, X_beta, r_pop_pt)
 
       # Family-member-only diagnostics
       sigma_mat_pr <- sigma_mat[pr_mf_idxs, pr_mf_idxs]
       sigma_mat_pr_cols <- sigma_mat[non_pr_mf_idxs, pr_mf_idxs]
-      X_beta_cond <- as.numeric(
-        X_beta[non_pr_mf_idxs] +
+      eta_hat <- as.numeric(
+        mu_hat[non_pr_mf_idxs] +
           sigma_mat_pr_cols %*%
           Matrix::solve(
             sigma_mat_pr,
-            y[pr_mf_idxs] - X_beta[pr_mf_idxs]
+            y[pr_mf_idxs] - mu_hat[pr_mf_idxs]
           )
       )
-      sigma_mat_cond <- as(
+      omega_mat <- as(
         sigma_mat[non_pr_mf_idxs, non_pr_mf_idxs] -
           sigma_mat_pr_cols %*%
           Matrix::solve(
@@ -303,45 +286,40 @@ FamLMMFit <- R6Class(
       )
 
       # Conditional and Cholesky residuals
-      r_cond <- y[non_pr_mf_idxs] - X_beta_cond
-      r_cond_pt <- r_cond / Matrix::diag(sigma_mat_cond)
-      r_cholesky <- as.numeric(
-        Matrix::solve(Matrix::t(Matrix::chol(sigma_mat_cond)), r_cond)
+      r_hat <- y[non_pr_mf_idxs] - eta_hat
+      r_s_hat <- r_hat / Matrix::diag(omega_mat)
+      r_c_hat <- as.numeric(
+        Matrix::solve(Matrix::t(Matrix::chol(omega_mat)), r_hat)
       )
 
-      # Adaptation of Q* from Hopper and Mattews (1982)
-      inv_S <- as(Matrix::solve(sigma_mat_cond), "symmetricMatrix")
-      inv_S_ii <- Matrix::diag(inv_S)
-      inv_S_ini <- inv_S
-      Matrix::diag(inv_S_ini) <- 0
-      q_star <- as.numeric(
-        sqrt(inv_S_ii) * (
-          r_cond + (inv_S_ini %*% r_cond) / inv_S_ii
-        )
-      )
+      # Adaptation of Q* from Hopper and Mattews (1982), referred to here as
+      # r*
+      omega_mat_inv <- as(Matrix::solve(omega_mat), "symmetricMatrix")
+      T_hat_inv <- 1 / sqrt(Matrix::diag(omega_mat_inv))
+      r_star_hat <- Matrix::Diagonal(T_hat_inv) %*%
+          Matrix::solve(omega_mat, r_hat)
       dx_non_pr <- data.table(
-        incl_ids[non_pr_mf_idxs], X_beta_cond, r_cond, r_cholesky, r_cond_pt,
-        q_star
+        incl_ids[non_pr_mf_idxs], eta, r_hat, r_c_hat, r_s_hat, r_star_hat
       )
 
       # Add family-level diagnostics
       dx_non_pr[,
         `:=`(
-          fam_X2 = sum(r_cholesky ^ 2),
-          fam_X2_df = .N
+          c_star_hat = sum(r_c_hat ^ 2),
+          c_star_hat_df = .N
         ),
         by = .(fmid)
       ][,
-        fam_X2_p := pchisq(fam_X2, fam_X2_df, lower.tail = FALSE)
+        p_c_star_hat := pchisq(c_star_hat, c_star_hat_df, lower.tail = FALSE)
       ]
       # Beaty, Liang, and Rao (1987) note that the sum of the family chi-square
       # statistics, which is the sum of the squared Cholesky residuals, should
-      # equal the sample size algebraically. An absolute comparison within 0.1
+      # equal the sample size algebraically. An relative comparison within 1e-5
       # is performed to account for floating point error
       if (!isTRUE(all.equal(
-        dx_non_pr[, sum(r_cholesky ^ 2)],
+        dx_non_pr[, sum(r_c_hat ^ 2)],
         nrow(dx_non_pr),
-        tol = 0.1, scale = 1
+        tolerance = 1e-5
       ))) {
         stop("Squared Cholesky residuals do not sum to total sample size")
       }
@@ -378,9 +356,9 @@ FamLMMFit <- R6Class(
       cat("\n===LINEAR MIXED MODEL RESULTS===\n")
       cat("DATA: ", private$data$get_data_name(), "\n", sep = "")
       cat("MEAN MODEL: ")
-      print(formula(private$formula, rhs = 1))
+      print(formula(private$formula, rhs = 1), showEnv = FALSE)
       cat("VARIANCE PARAMETER GROUPS: ")
-      print(formula(private$formula, lhs = 0, rhs = 2))
+      print(formula(private$formula, lhs = 0, rhs = 2), showEnv = FALSE)
       cat(
         "\nFAMILIES USED: ",
         length(lmm_data[["f_sizes"]]), "\n", sep = ""
@@ -442,7 +420,7 @@ FamLMMFit <- R6Class(
         theta_hat[v_parms], V_theta_hat[v_parms, v_parms],
         CIs = FALSE, tests = FALSE
       )
-      self$h2_a_lrts()
+      self$get_h2_a_lrts()
       cat("\nMEAN MODEL\n")
       mean_parms <- names(theta_hat)[!names(theta_hat) %in% v_parms]
       print_ests(
@@ -457,13 +435,17 @@ FamLMMFit <- R6Class(
     #' @description Perform likelihood ratio test(s) for no polygenic effect(s)
     #'
     #' @details Tests that each narrow-sense heritability parameter is zero
-    #'   individually using a likelihood ratio test. As these null hypotheses
-    #'   are on the boundary of the parameter space, a 50:50 mixture of
-    #'   chi-square(0) and chi-square(1) is used for the p-value (see Self and
-    #'   Liang, 1987).
+    #'   individually using a likelihood ratio test. See
+    #'   `vignette("linear_mixed_models")` for a detailed description of the
+    #'   methods used. By default, results are cached in the [`FamLMMFit`]
+    #'   object after the first call to avoid redundant optimizations on
+    #'   subsequent calls.
     #'
     #' @param print If `TRUE` (default), prints the likelihood ratio test
     #'   results in a nice format.
+    #' @param use_cached If `TRUE` (default), use cached likelihood ratio
+    #'   test results if any exist. Otherwise, new likelihood ratio tests will
+    #'   be run, and these results will replace any in the cache.
     #' @param ... Additional parameters to pass to the `control` list for
     #'   [optim()] with `method = "L-BGFS-B"`. Note that `parscale` and
     #'   `fnscale` cannot be modified.
@@ -471,13 +453,8 @@ FamLMMFit <- R6Class(
     #' @return A [`data.table`] containing likelihood ratio test results,
     #'   invisibly.
     #'
-    #' @references
-    #' Self SG, Liang K-Y. Asymptotic Properties of Maximum Likelihood
-    #'   Estimators and Likelihood Ratio Tests Under Nonstandard Conditions.
-    #'   *J Am Stat Assoc*. 1987; 82(398):605-10.
-    #'   <https://doi.org/10.2307/2289471>
-    get_h2_a_lrts = function(print = TRUE, ...) {
-      if (is.null(private$h2_a_lrts)) {
+    get_h2_a_lrts = function(print = TRUE, use_cached = TRUE, ...) {
+      if (!use_cached || is.null(private$h2_a_lrts)) {
         mod_data <- private$objfun[["env"]]$data
         parameters <- private$objfun[["env"]]$parameters
         h2_a_parms <- if (is.null(names(parameters[["h2_a"]]))) {
@@ -603,9 +580,7 @@ FamLMMFit <- R6Class(
     get_non_pr_mf_idxs = function() {
       # This construct for non_pr_mf_idxs ensures that we are effectively
       # "striking out" the rows belonging to probands while otherwise
-      # maintaining the order of the model frame, which is exactly the procedure
-      # used for the vectors of family-member-only diagnostics in
-      # sing_asc_lmm.cpp
+      # maintaining the order of the model frame
       pr_mf_idxs <- private$lmm_data[["f_pr_idxs"]]
       sort(setdiff(seq_along(private$lmm_data[["y"]]), pr_mf_idxs))
     }
