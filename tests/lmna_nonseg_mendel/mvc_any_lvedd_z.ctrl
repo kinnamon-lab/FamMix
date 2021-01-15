@@ -1,0 +1,23 @@
+! Control file for LVEDD z-score linear mixed model
+DEFINITION_FILE = mendel_data.def
+PEDIGREE_FILE = mendel_data.ped
+INPUT_FORMAT = No_Twins
+ECHO = yes
+ANALYSIS_OPTION = Variance_Components
+PROBAND_FACTOR = proband
+PROBAND = 1
+TRANSFORM = Standardize :: age_echo_yrs
+QUANTITATIVE_TRAIT = lvedd_z
+PREDICTOR = female :: lvedd_z
+PREDICTOR = age_echo_yrs :: lvedd_z
+PREDICTOR = n_lmna_vars :: lvedd_z
+PREDICTOR = n_oth_vars :: lvedd_z
+COVARIANCE_CLASS = Additive
+COVARIANCE_CLASS = Environmental
+OUTLIERS = True
+PEDIGREE_CUT_POINT = 1
+PERSON_CUT_POINT = 1
+TRANSFORM = Above_Threshold :: n_oth_vars
+INDICATOR_THRESHOLD = 1
+OUTPUT_FILE = mvc_any_lvedd_z.out
+SUMMARY_FILE = mvc_any_lvedd_z.sum

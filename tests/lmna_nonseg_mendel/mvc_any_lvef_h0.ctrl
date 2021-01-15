@@ -1,0 +1,20 @@
+! Control file for LVEF linear mixed model without polygenic effect
+DEFINITION_FILE = mendel_data.def
+PEDIGREE_FILE = mendel_data.ped
+INPUT_FORMAT = No_Twins
+ECHO = yes
+ANALYSIS_OPTION = Variance_Components
+PROBAND_FACTOR = proband
+PROBAND = 1
+TRANSFORM = Standardize :: age_echo_yrs
+QUANTITATIVE_TRAIT = lvef
+PREDICTOR = female :: lvef
+PREDICTOR = age_echo_yrs :: lvef
+PREDICTOR = n_lmna_vars :: lvef
+PREDICTOR = n_oth_vars :: lvef
+COVARIANCE_CLASS = Environmental
+OUTLIERS = True
+TRANSFORM = Above_Threshold :: n_oth_vars
+INDICATOR_THRESHOLD = 1
+OUTPUT_FILE = mvc_any_lvef_h0.out
+SUMMARY_FILE = mvc_any_lvef_h0.sum

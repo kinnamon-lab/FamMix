@@ -1,4 +1,4 @@
-context("FamData class")
+# Tests for FamData class functionality
 
 test_that("Constructor works properly", {
 
@@ -27,8 +27,8 @@ test_that("Constructor works properly", {
   )
 
   # Both recognized constructor signatures should work
-  expect_is(fd_sig1, c("FamData", "R6"))
-  expect_is(fd_sig2, c("FamData", "R6"))
+  expect_s3_class(fd_sig1, c("FamData", "R6"), exact = TRUE)
+  expect_s3_class(fd_sig2, c("FamData", "R6"), exact = TRUE)
 
   # Data set name should be captured
   expect_identical(fd_sig1$get_data_name(), "lmna_nonseg_perm")

@@ -1,0 +1,52 @@
+
+                        POLYGENIC-QTL OPTION
+
+                    SUMMARY FOR MEAN PARAMETERS
+ 
+ TRAIT             PARAMETER    PREDICTOR          ESTIMATE        STD ERR
+ 
+ lvedd_z               1        GRAND                2.3188         0.6812
+ lvedd_z               2        female              -0.2204         0.6336
+ lvedd_z               3        age_echo_yrs         0.7563         0.3422
+ lvedd_z               4        n_lmna_vars         -0.7801         0.6327
+ lvedd_z               5        n_oth_vars           1.1297         0.6676
+
+                    SUMMARY FOR VARIANCE COMPONENTS
+ 
+ TRAIT             PARAMETER    VARIANCE           ESTIMATE        STD ERR
+ 
+ lvedd_z               6        ENVIRONMENTAL        2.5806         0.7024
+
+ TRAIT             TOTAL VARIANCE
+ 
+ lvedd_z               2.5806
+
+ TRAIT             HERITABILITY    STD ERR
+
+ lvedd_z               0.0000       0.0000
+
+
+ 
+ FOR PUBLICATION PURPOSES, PLEASE CITE THE OVERALL REFERENCE:
+
+ Lange K, Papp JC, Sinsheimer JS, Sripracha R, Zhou H, Sobel EM (2013)
+ Mendel: The Swiss army knife of genetic analysis programs.
+ Bioinformatics 29:1568-1570.
+
+ FOR THIS SPECIFIC ANALYSIS OPTION, PLEASE ALSO CITE THE REFERENCES:
+
+ Lange K, Westlake J, Spence MA (1976). Extensions to pedigree analysis. III.
+ Variance components by the scoring method.
+ Annals of Human Genetics 39:485-491.
+
+ Lange K, Boehnke M (l983). Extensions to pedigree analysis. IV.
+ Covariance components models for multivariate traits.
+ American Journal of Medical Genetics 14:513-524.
+
+ Bauman L, Almasy L, Blangero J, Duggirala R, Sinsheimer JS, Lange K (2005).
+ Fishing for pleiotropic QTLs in a polygenic sea.
+ Annals of Human Genetics 69:590-611.
+
+ Lange K, Sobel E (2006). Variance component models for X-linked QTLs.
+ Genetic Epidemiology 30:380-383.
+

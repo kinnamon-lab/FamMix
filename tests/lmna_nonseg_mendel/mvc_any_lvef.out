@@ -1,0 +1,900 @@
+
+                       WELCOME TO MENDEL, VERSION 16.0
+ 
+                   (c) COPYRIGHT KENNETH LANGE, 1985-2016
+                       ALL COMMERCIAL RIGHTS RESERVED
+                   PROGRAMMED BY KENNETH LANGE & ERIC SOBEL
+ 
+              DOCUMENTATION AND MOST RECENT VERSION AVAILABLE AT
+                 http://www.genetics.ucla.edu/software/mendel
+
+
+ TIME OF DAY   : 14:19
+ MONTH/DAY/YEAR: 01/15/2021
+
+ CONTENT OF CONTROL FILE mvc_any_lvef.ctrl:
+ 
+ DEFINITION_FILE = mendel_data.def
+ PEDIGREE_FILE = mendel_data.ped
+ INPUT_FORMAT = No_Twins
+ ECHO = yes
+ ANALYSIS_OPTION = Variance_Components
+ PROBAND_FACTOR = proband
+ PROBAND = 1
+ TRANSFORM = Standardize :: age_echo_yrs
+ QUANTITATIVE_TRAIT = lvef
+ PREDICTOR = female :: lvef
+ PREDICTOR = age_echo_yrs :: lvef
+ PREDICTOR = n_lmna_vars :: lvef
+ PREDICTOR = n_oth_vars :: lvef
+ COVARIANCE_CLASS = Additive
+ COVARIANCE_CLASS = Environmental
+ OUTLIERS = True
+ PEDIGREE_CUT_POINT = 1
+ PERSON_CUT_POINT = 1
+ TRANSFORM = Above_Threshold :: n_oth_vars
+ INDICATOR_THRESHOLD = 1
+ OUTPUT_FILE = mvc_any_lvef.out
+ SUMMARY_FILE = mvc_any_lvef.sum
+
+ CONTENT OF DEFINITION FILE mendel_data.def
+ READ AS LIST-DIRECTED FILE:
+
+ FACTOR = proband              2 CATEGORIES
+ CATEGORY NAMES
+    0       
+    1       
+
+ FACTOR = vital_status         2 CATEGORIES
+ CATEGORY NAMES
+    Alive   
+    Deceased
+
+ FACTOR = f_lmna_vars          0 CATEGORIES
+
+ FACTOR = f_oth_vars           0 CATEGORIES
+
+ FACTOR = f_grade              0 CATEGORIES
+
+ VARIABLE = female          
+    LOWER BOUND =  0.0000000
+    UPPER BOUND =  1.0000000
+
+ VARIABLE = n_lmna_vars     
+    LOWER BOUND =  0.0000000
+    UPPER BOUND =  1.0000000
+
+ VARIABLE = n_oth_vars      
+    LOWER BOUND =  0.0000000
+    UPPER BOUND =     4.0000
+
+ VARIABLE = grade           
+    LOWER BOUND =  0.0000000
+    UPPER BOUND =     4.0000
+
+ VARIABLE = age_echo_yrs    
+    LOWER BOUND =  0.0000000
+    UPPER BOUND =    90.0000
+
+ VARIABLE = lvedd_z         
+    LOWER BOUND =  -INFINITY
+    UPPER BOUND =  +INFINITY
+
+ VARIABLE = lvef            
+    LOWER BOUND =  1.0000000
+    UPPER BOUND =   100.0000
+
+ CONTENT OF PEDIGREE FILE mendel_data.ped
+ READ AS LIST-DIRECTED FILE
+   WITH NO TWIN DATA
+
+ PEDIGREE NUMBER 1 HAS 36 MEMBERS AND NAME N.
+
+      ID       PARENT   IDS      SEX    TWIN   proband    l_status   mna_vars
+                                               oth_vars   f_grade    female  
+                                               n_lmna_v   n_oth_va   grade   
+                                               age_echo   lvedd_z    lvef    
+ 
+   1  1                          M             0          Deceased             
+                                                                     0.0000000 
+                                                                               
+                                                                               
+   2  2                          F             0          Deceased             
+                                                                     1.0000000 
+                                                                               
+                                                                               
+   3  3                          M             0          Alive                
+                                                                     0.0000000 
+                                                                               
+                                                                               
+   4  4        1        2        F             0          Deceased             
+                                               1          4          1.0000000 
+                                                          1.0000000  4.0000000 
+                                               51.000000             23.000000 
+   5  5        1        2        M             0          Alive      0         
+                                               0          3          0.0000000 
+                                               0.0000000  0.0000000  3.0000000 
+                                               60.000000  2.8400000  48.000000 
+   6  6                          F             0          Alive                
+                                                                     1.0000000 
+                                                                               
+                                                                               
+   7  7                          M             0          Alive                
+                                                                     0.0000000 
+                                                                               
+                                                                               
+   8  8        1        2        F             1          Deceased   1         
+                                               1          3          1.0000000 
+                                               1.0000000  1.0000000  3.0000000 
+                                               46.000000  2.6800000  25.000000 
+   9  9        1        2        M             0          Deceased   1         
+                                               1          4          0.0000000 
+                                               1.0000000  1.0000000  4.0000000 
+                                                                               
+  10  10                         F             0          Alive      0         
+                                               0                     1.0000000 
+                                               0.0000000  0.0000000            
+                                                                               
+  11  11       1        2        M             0          Alive                
+                                               1                     0.0000000 
+                                                          1.0000000            
+                                                                               
+  12  12                         F             0          Deceased             
+                                                                     1.0000000 
+                                                                               
+                                                                               
+  13  13       1        2        M             0          Deceased             
+                                                          4          0.0000000 
+                                                                     4.0000000 
+                                               40.000000  4.4400000  21.000000 
+  14  14                         F             0          Alive                
+                                                                     1.0000000 
+                                                                               
+                                                                               
+  15  15       1        2        M             0          Deceased   1         
+                                               1          4          0.0000000 
+                                               1.0000000  1.0000000  4.0000000 
+                                               45.000000  6.1000000  23.000000 
+  16  16                         F             0          Alive                
+                                                                     1.0000000 
+                                                                               
+                                                                               
+  17  17       3        4        M             0          Alive      0         
+                                               1                     0.0000000 
+                                               0.0000000  1.0000000            
+                                                                               
+  18  18                         M             0          Alive                
+                                                                     0.0000000 
+                                                                               
+                                                                               
+  19  19       3        4        F             0          Alive      0         
+                                               1          1          1.0000000 
+                                               0.0000000  1.0000000  1.0000000 
+                                               32.000000  1.5900000  40.000000 
+  20  20       5        6        M             0          Alive                
+                                                          0          0.0000000 
+                                                                     0.0000000 
+                                               32.000000  1.5500000  69.000000 
+  21  21       5        6        M             0          Alive      0         
+                                               0          0          0.0000000 
+                                               0.0000000  0.0000000  0.0000000 
+                                               20.000000  -0.7000000 66.000000 
+  22  22       5        6        F             0          Alive      0         
+                                               0          1          1.0000000 
+                                               0.0000000  0.0000000  1.0000000 
+                                               27.000000  3.1200000  66.000000 
+  23  23       7        8        F             0          Alive      1         
+                                               1          0          1.0000000 
+                                               1.0000000  1.0000000  0.0000000 
+                                               22.000000  0.1000000  62.000000 
+  24  24                         M             0          Alive                
+                                                                     0.0000000 
+                                                                               
+                                                                               
+  25  25       9        10       F             0          Alive      1         
+                                               1          0          1.0000000 
+                                               1.0000000  1.0000000  0.0000000 
+                                               36.000000  0.6400000  65.000000 
+  26  26       9        10       F             0          Alive      0         
+                                               1          0          1.0000000 
+                                               0.0000000  1.0000000  0.0000000 
+                                               26.000000  1.3200000  59.000000 
+  27  27       9        10       M             0          Alive      0         
+                                               1          3          0.0000000 
+                                               0.0000000  1.0000000  3.0000000 
+                                               33.000000             15.000000 
+  28  28       11       12       F             0          Alive      0         
+                                               0          1          1.0000000 
+                                               0.0000000  0.0000000  1.0000000 
+                                               21.000000  2.0000000  65.000000 
+  29  29       11       12       F             0          Alive      0         
+                                               1          2          1.0000000 
+                                               0.0000000  1.0000000  2.0000000 
+                                               39.000000  2.3000000  49.000000 
+  30  30       11       12       M             0          Alive      0         
+                                               1          1          0.0000000 
+                                               0.0000000  1.0000000  1.0000000 
+                                               39.000000  2.3000000  63.000000 
+  31  31       11       12       M             0          Alive      0         
+                                               1          1          0.0000000 
+                                               0.0000000  1.0000000  1.0000000 
+                                               37.000000  2.5600000  58.000000 
+  32  32       13       14       F             0          Alive      0         
+                                               0          0          1.0000000 
+                                               0.0000000  0.0000000  0.0000000 
+                                               24.000000  1.4000000  57.000000 
+  33  33       15       16       M             0          Alive      1         
+                                               0          0          0.0000000 
+                                               1.0000000  0.0000000  0.0000000 
+                                               29.000000  0.6500000  61.000000 
+  34  34       15       16       M             0          Alive      1         
+                                               0          0          0.0000000 
+                                               1.0000000  0.0000000  0.0000000 
+                                               18.000000  0.3700000  61.000000 
+  35  35       18       19       M             0          Alive      0         
+                                               1          2          0.0000000 
+                                               0.0000000  1.0000000  2.0000000 
+                                               18.000000  2.8900000  28.000000 
+  36  36       24       25       M             0          Alive      1         
+                                               0          0          0.0000000 
+                                               1.0000000  0.0000000  0.0000000 
+                                               20.000000  1.5300000  59.000000 
+
+ PEDIGREE NUMBER 2 HAS 3 MEMBERS AND NAME L.
+
+      ID       PARENT   IDS      SEX    TWIN   proband    l_status   mna_vars
+                                               oth_vars   f_grade    female  
+                                               n_lmna_v   n_oth_va   grade   
+                                               age_echo   lvedd_z    lvef    
+ 
+   1  1                          M             0          Deceased             
+                                                                     0.0000000 
+                                                                               
+                                                                               
+   2  2                          F             0          Alive      0         
+                                               4          4          1.0000000 
+                                               0.0000000  4.0000000  4.0000000 
+                                               59.000000             20.000000 
+   3  3        1        2        M             1          Alive      1         
+                                               4          3          0.0000000 
+                                               1.0000000  4.0000000  3.0000000 
+                                               42.000000  4.4600000  24.000000 
+
+ PEDIGREE NUMBER 3 HAS 13 MEMBERS AND NAME O.
+
+      ID       PARENT   IDS      SEX    TWIN   proband    l_status   mna_vars
+                                               oth_vars   f_grade    female  
+                                               n_lmna_v   n_oth_va   grade   
+                                               age_echo   lvedd_z    lvef    
+ 
+   1  1                          M             0          Alive      0         
+                                               0          3          0.0000000 
+                                               0.0000000  0.0000000  3.0000000 
+                                               65.000000             30.000000 
+   2  2                          F             0          Alive      0         
+                                               1          3          1.0000000 
+                                               0.0000000  1.0000000  3.0000000 
+                                                          4.7400000  20.000000 
+   3  3        12       13       M             0          Alive      1         
+                                                          0          0.0000000 
+                                               1.0000000             0.0000000 
+                                               75.000000                       
+   4  4                          F             0          Alive      0         
+                                                          0          1.0000000 
+                                               0.0000000             0.0000000 
+                                               61.000000  -3.0900000 70.000000 
+   5  5        12       13       M             0          Alive                
+                                                                     0.0000000 
+                                                                               
+                                                                               
+   6  6        1        2        M             0          Deceased             
+                                                          4          0.0000000 
+                                                                     4.0000000 
+                                               32.000000  4.3600000  8.0000000 
+   7  7                          F             0          Deceased             
+                                                                     1.0000000 
+                                                                               
+                                                                               
+   8  8        1        2        M             0          Deceased   0         
+                                               1          4          0.0000000 
+                                               0.0000000  1.0000000  4.0000000 
+                                                                               
+   9  9        3        4        F             0          Alive      1         
+                                               0          0          1.0000000 
+                                               1.0000000  0.0000000  0.0000000 
+                                               43.000000  -1.7500000 57.000000 
+  10  10       8        7        M             0          Alive      0         
+                                               1          0          0.0000000 
+                                               0.0000000  1.0000000  0.0000000 
+                                               21.000000  1.9000000  58.000000 
+  11  11       8        9        M             1          Deceased   1         
+                                               1          4          0.0000000 
+                                               1.0000000  1.0000000  4.0000000 
+                                               15.000000  5.2900000  22.000000 
+  12  12                         M             0                               
+                                                                     0.0000000 
+                                                                               
+                                                                               
+  13  13                         F             0                               
+                                                                     1.0000000 
+                                                                               
+                                                                               
+
+ PEDIGREE NUMBER 4 HAS 25 MEMBERS AND NAME P.
+
+      ID       PARENT   IDS      SEX    TWIN   proband    l_status   mna_vars
+                                               oth_vars   f_grade    female  
+                                               n_lmna_v   n_oth_va   grade   
+                                               age_echo   lvedd_z    lvef    
+ 
+   1  1        24       25       M             0          Deceased   1         
+                                                                     0.0000000 
+                                               1.0000000                       
+                                                                               
+   2  2                          F             0          Deceased             
+                                                                     1.0000000 
+                                                                               
+                                                                               
+   3  3        24       25       M             0          Deceased   1         
+                                                                     0.0000000 
+                                               1.0000000                       
+                                                                               
+   4  4                          F             0          Deceased             
+                                                                     1.0000000 
+                                                                               
+                                                                               
+   5  5                          M             0          Deceased             
+                                                                     0.0000000 
+                                                                               
+                                                                               
+   6  6        24       25       F             0          Deceased             
+                                                                     1.0000000 
+                                                                               
+                                                                               
+   7  7                          M             0          Alive                
+                                                                     0.0000000 
+                                                                               
+                                                                               
+   8  8        1        2        F             0          Deceased   1         
+                                                                     1.0000000 
+                                               1.0000000                       
+                                                                               
+   9  9        3        4        F             0          Deceased             
+                                                                     1.0000000 
+                                                                               
+                                                                               
+  10  10       3        4        M             0          Deceased   1         
+                                                          3          0.0000000 
+                                               1.0000000             3.0000000 
+                                               57.000000  4.2300000  47.000000 
+  11  11                         F             0          Alive      0         
+                                               1                     1.0000000 
+                                               0.0000000  1.0000000            
+                                                                               
+  12  12       5        6        M             0          Deceased             
+                                                                     0.0000000 
+                                                                               
+                                                                               
+  13  13                         F             0          Alive                
+                                                                     1.0000000 
+                                                                               
+                                                                               
+  14  14       7        8        F             0          Alive      1         
+                                                          1          1.0000000 
+                                               1.0000000             1.0000000 
+                                               35.000000  1.7800000            
+  15  15       7        8        F             0          Alive                
+                                                                     1.0000000 
+                                                                               
+                                                                               
+  16  16       7        8        F             0          Alive      1         
+                                                          1          1.0000000 
+                                               1.0000000             1.0000000 
+                                               40.000000  2.1400000  55.000000 
+  17  17                         M             0          Alive                
+                                                                     0.0000000 
+                                                                               
+                                                                               
+  18  18       10       11       F             1          Alive      1         
+                                               1          4          1.0000000 
+                                               1.0000000  1.0000000  4.0000000 
+                                               48.000000  5.1100000  31.000000 
+  19  19       10       11       M             0          Deceased             
+                                                                     0.0000000 
+                                                                               
+                                                                               
+  20  20       10       11       F             0          Alive      1         
+                                               1          1          1.0000000 
+                                               1.0000000  1.0000000  1.0000000 
+                                               56.000000  2.0000000  50.000000 
+  21  21       12       13       F             0          Deceased             
+                                                                     1.0000000 
+                                                                               
+                                                                               
+  22  22       17       18       M             0          Alive      0         
+                                               0          2          0.0000000 
+                                               0.0000000  0.0000000  2.0000000 
+                                               27.000000  3.7300000  45.000000 
+  23  23       17       18       F             0          Deceased   1         
+                                               1          4          1.0000000 
+                                               1.0000000  1.0000000  4.0000000 
+                                               22.000000  5.8300000  15.000000 
+  24  24                         M             0                               
+                                                                     0.0000000 
+                                                                               
+                                                                               
+  25  25                         F             0                               
+                                                                     1.0000000 
+                                                                               
+                                                                               
+
+ PEDIGREE NUMBER 5 HAS 11 MEMBERS AND NAME S.
+
+      ID       PARENT   IDS      SEX    TWIN   proband    l_status   mna_vars
+                                               oth_vars   f_grade    female  
+                                               n_lmna_v   n_oth_va   grade   
+                                               age_echo   lvedd_z    lvef    
+ 
+   1  1                          M             0          Deceased             
+                                                                     0.0000000 
+                                                                               
+                                                                               
+   2  2                          F             0          Deceased             
+                                                                     1.0000000 
+                                                                               
+                                                                               
+   3  3                          M             0          Deceased             
+                                                                     0.0000000 
+                                                                               
+                                                                               
+   4  4                          F             0          Deceased             
+                                                                     1.0000000 
+                                                                               
+                                                                               
+   5  5        1        2        M             0          Deceased   1         
+                                               1          4          0.0000000 
+                                               1.0000000  1.0000000  4.0000000 
+                                               72.000000  2.8000000  25.000000 
+   6  6        1        2        M             0          Deceased   1         
+                                               0          1          0.0000000 
+                                               1.0000000  0.0000000  1.0000000 
+                                               82.000000             45.000000 
+   7  7        3        4        F             0          Deceased   0         
+                                               1          4          1.0000000 
+                                               0.0000000  1.0000000  4.0000000 
+                                               82.000000  6.7500000  15.000000 
+   8  8        6        7        F             0          Alive      0         
+                                               1          4          1.0000000 
+                                               0.0000000  1.0000000  4.0000000 
+                                               53.000000  4.7300000  40.000000 
+   9  9        6        7        M             1          Alive      1         
+                                               1          4          0.0000000 
+                                               1.0000000  1.0000000  4.0000000 
+                                               54.000000  4.8500000  20.000000 
+  10  10       6        7        F             0          Alive      0         
+                                               1          4          1.0000000 
+                                               0.0000000  1.0000000  4.0000000 
+                                               45.000000  3.9900000  17.000000 
+  11  11       6        7        F             0          Alive      1         
+                                               0          3          1.0000000 
+                                               1.0000000  0.0000000  3.0000000 
+                                               45.000000  2.2400000  36.000000 
+
+
+ TOTALS:    PEDIGREES  FAMILIES  PEOPLE  FEMALES   MALES   MZTWINS  FOUNDERS
+                  5       27       88       43       45        0       32
+            PROBANDS
+                  5
+
+ 
+ TALLIES FOR THE PHENOTYPES:
+
+ FACTOR               CATEGORY      COUNT
+
+  proband             0               83
+  proband             1                5
+
+ FACTOR               CATEGORY      COUNT
+
+  vital_status        MISSING          4
+  vital_status        Alive           51
+  vital_status        Deceased        33
+
+ FACTOR               CATEGORY      COUNT
+
+  f_lmna_vars         MISSING         38
+  f_lmna_vars         0               25
+  f_lmna_vars         1               25
+
+ FACTOR               CATEGORY      COUNT
+
+  f_oth_vars          MISSING         44
+  f_oth_vars          0               14
+  f_oth_vars          1               28
+  f_oth_vars          4                2
+
+ FACTOR               CATEGORY      COUNT
+
+  f_grade             MISSING         40
+  f_grade             0               13
+  f_grade             1                9
+  f_grade             2                3
+  f_grade             3                8
+  f_grade             4               15
+
+ 
+ DESCRIPTIVE STATISTICS FOR THE QUANTITATIVE VARIABLES:
+ 
+ VARIABLE             female     n_lmna_v     n_oth_va        grade     age_echo
+                     lvedd_z         lvef
+ 
+ MEAN                0.48864      0.50000      0.68182      2.06250     -0.00000
+                     2.64425     41.65909
+ STD DEVIATION       0.49987      0.50000      0.46577      1.63817      1.00000
+                     2.08336     18.81240
+ SKEWNESS            0.04547      0.00000     -0.78072     -0.04343      0.60301
+                    -0.37323     -0.10192
+ KURTOSIS            1.00207      1.00000      1.60952      1.34306      2.63248
+                     3.19731      1.51619
+ MINIMUM             0.00000      0.00000      0.00000      0.00000     -1.48905
+                    -3.09000      8.00000
+ MEDIAN              0.00000      0.50000      1.00000      2.00000     -0.11572
+                     2.43000     45.00000
+ MAXIMUM             1.00000      1.00000      1.00000      4.00000      2.34485
+                     6.75000     70.00000
+ VALUES PRESENT           88           50           44           48           45
+                          40           44
+ VALUES MISSING            0           38           44           40           43
+                          48           44
+ TRANSFORM              NONE         NONE ABOVE_THRESH         NONE  STANDARDIZE
+                        NONE         NONE
+ 
+ INITIALIZATION RUN TIME  :  0.123 SECONDS
+
+        MENDEL DATA INITIALIZATION COMPLETED.
+
+ *********************************************************************
+ 
+ ANALYSIS OF INPUT DATA: 
+
+                        POLYGENIC-QTL OPTION
+
+                         OPTIMIZATION PROBLEM 1     
+
+ GRID OR SEARCH OPTION: SEARCH
+ LOG BASE:  E
+
+ PARAMETER MINIMA AND MAXIMA:
+
+     PAR 01       PAR 02       PAR 03       PAR 04       PAR 05       PAR 06  
+     PAR 07  
+
+    -INFINITY    -INFINITY    -INFINITY    -INFINITY    -INFINITY     0.000000
+     0.388796
+
+     INFINITY     INFINITY     INFINITY     INFINITY     INFINITY     INFINITY
+     INFINITY
+
+ ITER  STEPS  LOGLIKELIHOOD    PAR 01       PAR 02       PAR 03       PAR 04  
+                               PAR 05       PAR 06       PAR 07  
+
+   1     0   -0.9844151E+02  0.5377E+02   0.3479E+01  -0.5738E+01  -0.3618E+01
+                            -0.1820E+02   0.0000E+00   0.1944E+03
+
+   2     0   -0.9736136E+02  0.4932E+02   0.2323E+01  -0.7567E+01   0.2266E+01
+                            -0.1250E+02   0.3005E+02   0.1783E+03
+
+   3     0   -0.9725126E+02  0.4992E+02   0.2436E+01  -0.6920E+01   0.2256E+01
+                            -0.1306E+02   0.2850E+02   0.1754E+03
+
+   4     0   -0.9719247E+02  0.5015E+02   0.2824E+01  -0.6158E+01   0.2769E+01
+                            -0.1326E+02   0.4364E+02   0.1441E+03
+
+   5     0   -0.9717579E+02  0.5015E+02   0.2873E+01  -0.6199E+01   0.2776E+01
+                            -0.1327E+02   0.4276E+02   0.1505E+03
+
+   6     0   -0.9715435E+02  0.5035E+02   0.3265E+01  -0.5755E+01   0.3279E+01
+                            -0.1330E+02   0.6551E+02   0.1297E+03
+
+   7     0   -0.9715090E+02  0.5036E+02   0.3251E+01  -0.5786E+01   0.3243E+01
+                            -0.1330E+02   0.6416E+02   0.1320E+03
+
+   8     0   -0.9714303E+02  0.5050E+02   0.3369E+01  -0.5728E+01   0.3343E+01
+                            -0.1330E+02   0.6837E+02   0.1322E+03
+
+   9     0   -0.9714205E+02  0.5062E+02   0.3393E+01  -0.5705E+01   0.3363E+01
+                            -0.1332E+02   0.7109E+02   0.1315E+03
+
+  10     0   -0.9714202E+02  0.5063E+02   0.3411E+01  -0.5696E+01   0.3382E+01
+                            -0.1331E+02   0.7185E+02   0.1309E+03
+
+  11     0   -0.9714202E+02  0.5065E+02   0.3404E+01  -0.5695E+01   0.3379E+01
+                            -0.1331E+02   0.7196E+02   0.1307E+03
+
+  12     0   -0.9714202E+02  0.5064E+02   0.3408E+01  -0.5695E+01   0.3381E+01
+                            -0.1331E+02   0.7193E+02   0.1308E+03
+
+  13     0   -0.9714202E+02  0.5064E+02   0.3408E+01  -0.5695E+01   0.3381E+01
+                            -0.1331E+02   0.7192E+02   0.1308E+03
+
+ THE MAXIMUM LOGLIKELIHOOD -0.9714202E+02 OCCURS AT ITERATION  13.
+
+ ASYMPTOTIC STANDARD ERRORS OF THE PARAMETERS:
+
+     PAR 01       PAR 02       PAR 03       PAR 04       PAR 05       PAR 06  
+     PAR 07  
+
+   0.5904E+01   0.5290E+01   0.3142E+01   0.5739E+01   0.5157E+01   0.1314E+03
+   0.1079E+03
+
+ ASYMPTOTIC CORRELATION MATRIX OF THE PARAMETERS:
+
+     PAR 01       PAR 02       PAR 03       PAR 04       PAR 05       PAR 06  
+     PAR 07  
+
+     1.0000
+
+    -0.1744       1.0000
+
+     0.3341       0.2539       1.0000
+
+    -0.1735       0.1269       0.1898       1.0000
+
+    -0.4378      -0.1962      -0.1084       0.0907       1.0000
+
+     0.4285       0.3568       0.6184       0.3398      -0.0697       1.0000
+
+    -0.4117      -0.3428      -0.5941      -0.3264       0.0670      -0.8993
+     1.0000
+
+ 
+                POSSIBLE OUTLIER INDIVIDUALS
+ 
+ FOR EACH NON-PROBAND IT IS POSSIBLE TO PREDICT HIS/HER TRAIT
+ VALUES GIVEN THE TRAIT VALUES OF OTHER PEDIGREE MEMBERS.  THESE
+ PREDICTED VALUES CAN BE COMPARED TO THE OBSERVED VALUES BY
+ COMPUTING AN APPROPRIATE QUADRATIC FORM.  THOSE INDIVIDUALS
+ WITH P-VALUES FOR THE QUADRATIC FORM LESS THAN THE CUTOFF MAY
+ BE OUTLIERS AND ARE LISTED BELOW.
+
+ PEDIGREE    PERSON     QUADRATIC FORM     P-VALUE
+ N           15              1.74          0.18688
+ TRAIT       OBSERVED     PREDICTED    STANDARD DEVIATION
+ lvef         23.00         40.68           13.40    
+
+ PEDIGREE    PERSON     QUADRATIC FORM     P-VALUE
+ N           34              0.00          0.95374
+ TRAIT       OBSERVED     PREDICTED    STANDARD DEVIATION
+ lvef         61.00         60.20           13.80    
+
+ PEDIGREE    PERSON     QUADRATIC FORM     P-VALUE
+ N           33              0.13          0.72277
+ TRAIT       OBSERVED     PREDICTED    STANDARD DEVIATION
+ lvef         61.00         56.10           13.80    
+
+ PEDIGREE    PERSON     QUADRATIC FORM     P-VALUE
+ N           32              0.03          0.86530
+ TRAIT       OBSERVED     PREDICTED    STANDARD DEVIATION
+ lvef         57.00         59.39           14.07    
+
+ PEDIGREE    PERSON     QUADRATIC FORM     P-VALUE
+ N           30              2.59          0.10754
+ TRAIT       OBSERVED     PREDICTED    STANDARD DEVIATION
+ lvef         63.00         41.00           13.67    
+
+ PEDIGREE    PERSON     QUADRATIC FORM     P-VALUE
+ N           29              0.03          0.85536
+ TRAIT       OBSERVED     PREDICTED    STANDARD DEVIATION
+ lvef         49.00         46.51           13.67    
+
+ PEDIGREE    PERSON     QUADRATIC FORM     P-VALUE
+ N           28              0.01          0.93764
+ TRAIT       OBSERVED     PREDICTED    STANDARD DEVIATION
+ lvef         65.00         66.07           13.67    
+
+ PEDIGREE    PERSON     QUADRATIC FORM     P-VALUE
+ N           31              1.31          0.25179
+ TRAIT       OBSERVED     PREDICTED    STANDARD DEVIATION
+ lvef         58.00         42.33           13.67    
+
+ PEDIGREE    PERSON     QUADRATIC FORM     P-VALUE
+ N           25              2.44          0.11844
+ TRAIT       OBSERVED     PREDICTED    STANDARD DEVIATION
+ lvef         65.00         43.75           13.61    
+
+ PEDIGREE    PERSON     QUADRATIC FORM     P-VALUE
+ N           36              0.09          0.76272
+ TRAIT       OBSERVED     PREDICTED    STANDARD DEVIATION
+ lvef         59.00         63.21           13.96    
+
+ PEDIGREE    PERSON     QUADRATIC FORM     P-VALUE
+ N           27              4.41          0.03581
+ TRAIT       OBSERVED     PREDICTED    STANDARD DEVIATION
+ lvef         15.00         43.87           13.75    
+
+ PEDIGREE    PERSON     QUADRATIC FORM     P-VALUE
+ N           26              1.13          0.28873
+ TRAIT       OBSERVED     PREDICTED    STANDARD DEVIATION
+ lvef         59.00         44.41           13.75    
+
+ PEDIGREE    PERSON     QUADRATIC FORM     P-VALUE
+ N           23              1.00          0.31663
+ TRAIT       OBSERVED     PREDICTED    STANDARD DEVIATION
+ lvef         62.00         48.04           13.94    
+
+ PEDIGREE    PERSON     QUADRATIC FORM     P-VALUE
+ N           5               0.05          0.82318
+ TRAIT       OBSERVED     PREDICTED    STANDARD DEVIATION
+ lvef         48.00         45.01           13.40    
+
+ PEDIGREE    PERSON     QUADRATIC FORM     P-VALUE
+ N           22              0.20          0.65427
+ TRAIT       OBSERVED     PREDICTED    STANDARD DEVIATION
+ lvef         66.00         59.82           13.80    
+
+ PEDIGREE    PERSON     QUADRATIC FORM     P-VALUE
+ N           21              0.29          0.58844
+ TRAIT       OBSERVED     PREDICTED    STANDARD DEVIATION
+ lvef         66.00         58.53           13.80    
+
+ PEDIGREE    PERSON     QUADRATIC FORM     P-VALUE
+ N           19              0.00          0.95345
+ TRAIT       OBSERVED     PREDICTED    STANDARD DEVIATION
+ lvef         40.00         40.81           13.87    
+
+ PEDIGREE    PERSON     QUADRATIC FORM     P-VALUE
+ N           35              1.34          0.24737
+ TRAIT       OBSERVED     PREDICTED    STANDARD DEVIATION
+ lvef         28.00         44.19           13.99    
+
+ PEDIGREE    PERSON     QUADRATIC FORM     P-VALUE
+ L           2               0.73          0.39287
+ TRAIT       OBSERVED     PREDICTED    STANDARD DEVIATION
+ lvef         20.00         31.97           14.01    
+
+ PEDIGREE    PERSON     QUADRATIC FORM     P-VALUE
+ O           1               0.68          0.40830
+ TRAIT       OBSERVED     PREDICTED    STANDARD DEVIATION
+ lvef         30.00         41.69           14.13    
+
+ PEDIGREE    PERSON     QUADRATIC FORM     P-VALUE
+ O           10              1.53          0.21623
+ TRAIT       OBSERVED     PREDICTED    STANDARD DEVIATION
+ lvef         58.00         40.52           14.13    
+
+ PEDIGREE    PERSON     QUADRATIC FORM     P-VALUE
+ O           9               0.13          0.71441
+ TRAIT       OBSERVED     PREDICTED    STANDARD DEVIATION
+ lvef         57.00         51.87           14.01    
+
+ PEDIGREE    PERSON     QUADRATIC FORM     P-VALUE
+ P           22              0.08          0.77273
+ TRAIT       OBSERVED     PREDICTED    STANDARD DEVIATION
+ lvef         45.00         49.00           13.83    
+
+ PEDIGREE    PERSON     QUADRATIC FORM     P-VALUE
+ P           23              5.63          0.01770
+ TRAIT       OBSERVED     PREDICTED    STANDARD DEVIATION
+ lvef         15.00         47.81           13.83    
+
+ PEDIGREE    PERSON     QUADRATIC FORM     P-VALUE
+ P           20              1.13          0.28856
+ TRAIT       OBSERVED     PREDICTED    STANDARD DEVIATION
+ lvef         50.00         35.17           13.97    
+
+ PEDIGREE    PERSON     QUADRATIC FORM     P-VALUE
+ S           7               0.14          0.70911
+ TRAIT       OBSERVED     PREDICTED    STANDARD DEVIATION
+ lvef         15.00         20.07           13.58    
+
+ PEDIGREE    PERSON     QUADRATIC FORM     P-VALUE
+ S           6               0.62          0.42926
+ TRAIT       OBSERVED     PREDICTED    STANDARD DEVIATION
+ lvef         45.00         34.37           13.45    
+
+ PEDIGREE    PERSON     QUADRATIC FORM     P-VALUE
+ S           8               0.56          0.45388
+ TRAIT       OBSERVED     PREDICTED    STANDARD DEVIATION
+ lvef         40.00         29.87           13.52    
+
+ PEDIGREE    PERSON     QUADRATIC FORM     P-VALUE
+ S           11              1.30          0.25422
+ TRAIT       OBSERVED     PREDICTED    STANDARD DEVIATION
+ lvef         36.00         51.41           13.52    
+
+ PEDIGREE    PERSON     QUADRATIC FORM     P-VALUE
+ S           10              1.76          0.18445
+ TRAIT       OBSERVED     PREDICTED    STANDARD DEVIATION
+ lvef         17.00         34.94           13.52    
+
+ PEDIGREE    PERSON     QUADRATIC FORM     P-VALUE
+ S           5               0.09          0.76632
+ TRAIT       OBSERVED     PREDICTED    STANDARD DEVIATION
+ lvef         25.00         29.14           13.94    
+
+ 
+                POSSIBLE OUTLIER PEDIGREES
+ 
+ FOR THE NON-PROBANDS IN A PEDIGREE, IT IS POSSIBLE TO COMPUTE
+ A QUADRATIC FORM WHICH UNDER A MULTIVARIATE NORMAL MODEL
+ FOLLOWS AN APPROXIMATE CHI-SQUARE DISTRIBUTION.  THE DEGREES
+ OF FREEDOM N EQUALS THE NUMBER OF MEASURED TRAIT VALUES AMONG
+ THE NON-PROBANDS OF THE PEDIGREE.  UNDER A MULTIVARIATE T
+ MODEL, THIS QUADRATIC FORM DIVIDED BY N FOLLOWS AN APPROXIMATE
+ F DISTRIBUTION WITH DEGREES OF FREEDOM N AND V, WHERE V IS THE
+ CONVERGED T PARAMETER.  THOSE PEDIGREES WITH P-VALUES FOR THE
+ QUADRATIC FORM LESS THAN THE CUTOFF ARE LISTED BELOW.
+
+            DEGREES OF    QUADRATIC              
+ PEDIGREE     FREEDOM        FORM         P-VALUE
+ 
+ N              18           16.74        0.54118
+ L               1            0.73        0.39287
+ O               3            2.19        0.53400
+ P               3            6.86        0.07641
+ S               6            4.48        0.61203
+
+ 
+                 EDF TESTS OF OVERALL FIT
+ 
+ IN THE FOLLOWING STATISTICAL TESTS OF THE OVERALL FIT
+ OF THE MODEL, THE P-VALUES ASSOCIATED WITH THE PEDIGREE
+ QUADRATIC FORMS ARE VIEWED AS RANDOM VARIABLES OR DEVIATES.
+
+ IF THE CURRENT MODEL IS VALID, THESE DEVIATES SHOULD
+ REPRESENT A RANDOM SAMPLE FROM A UNIFORM DISTRIBUTION ON
+ THE INTERVAL (0,1).  THE FOLLOWING STATISTICS USE THE
+ EMPIRICAL DISTRIBUTION FUNCTION OF THE DEVIATES TO TEST FOR
+ DEPARTURES FROM THE UNIFORM DISTRIBUTION.  SEE THE PAPER:
+ M.A. STEPHENS, EDF STATISTICS FOR GOODNESS OF FIT AND SOME
+ COMPARISONS. JASA (1974) 69:730-737.
+
+ UPPER PERCENTAGE POINTS FOR THE MODIFIED STATISTICS:
+ 
+    STATISTIC                      P-VALUES
+                       .10      .05       .025     .01
+ 
+ ANDERSON-DARLING     1.933    2.492     3.020   3.857
+ CRAMER-VON MISES     0.347    0.461     0.581   0.743
+      WATSON          0.152    0.187     0.221   0.267
+        D+            1.073    1.224     1.358   1.518
+        D-            1.073    1.224     1.358   1.518
+        D             1.224    1.358     1.480   1.628
+      KUIPER          1.620    1.747     1.862   2.001
+
+ SAMPLE VALUES FOR THESE DATA:
+
+    STATISTIC          VALUE    MODIFIED VALUE
+
+ ANDERSON-DARLING      0.708         0.708
+ CRAMER-VON MISES      0.135         0.095
+     WATSON            0.112         0.111
+       D+              0.388         0.933
+       D-              0.193         0.464
+       D               0.388         0.933
+     KUIPER            0.581         1.451
+
+ *** WARNING ***  EDF STATISTIC P-VALUES ARE NOT ACCURATE
+ WHEN THE NUMBER OF DEVIATES IS SMALL.
+
+ 
+ THE BINOMIAL STATISTIC ASSOCIATED WITH THE OBSERVED
+ NUMBERS OF DEVIATES LESS THAN ALPHA, ALPHA = .10, .05, AND .01,
+ GIVES A TEST FOR AN OVER-ABUNDANCE OF SMALL DEVIATES.
+ 
+ ALPHA     NUMBER         P-VALUE
+  0.10        1           0.40951
+  0.05        0           1.00000
+  0.01        0           1.00000
+
+ 
+
+ CHECK THE FILE mvc_any_lvef.sum FOR A SUMMARY OF ANALYSIS RESULTS,
+ AND FOR CITATIONS TO USE IN PUBLICATIONS.
+
+ TIME OF DAY   : 14:19
+ MONTH/DAY/YEAR: 01/15/2021
+ 
+ ANALYSIS RUN TIME  :  0.017 SECONDS
+
+        MENDEL DATA ANALYSIS COMPLETED.

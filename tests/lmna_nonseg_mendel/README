@@ -1,0 +1,49 @@
+---------------------------
+Mendel Files for Test Cases
+---------------------------
+
+This directory contains inputs and outputs for univariate linear mixed models
+fit using Mendel 16.0. The input data were obtained from commit 469141d of
+https://github.com/kinnamon-lab/lmna_nonseg, and a correction to fix switched
+parental IDs identical to the one in data-raw/lmna_nonseg.R was made to
+lmna_nonseg.ped.
+
+File(s)                           | Description
+----------------------------------+---------------------------------------------
+lmna_nonseg.ped                   | Mendel input pedigree file
+lmna_nonseg.def                   | Mendel input definition file
+mvc_any_lvef.{ctrl,out,sum}       | LVEF model with polygenic effect
+mvc_any_lvef_h0.{ctrl,out,sum}    | LVEF model without polygenic effect
+mvc_any_lvedd_z.{ctrl,out,sum}    | LVEDD z-score model with polygenic effect
+mvc_any_lvedd_z_h0.{ctrl,out,sum} | LVEDD z-score model without polygenic effect
+----------------------------------+---------------------------------------------
+
+In comparing snapshot test results for this package to these results, the
+following should be noted:
+1) Point estimates should be nearly identical for all parameters (after
+   appropriate transformation for sigma).
+2) Standard errors should be nearly identical except for heritability, for which
+   there may be a bug in Mendel. The estimated standard errors for sigma_a and
+   sigma_e in Mendel can be reproduced by transforming the observed information
+   matrix (inverse covariance matrix) from FamModel in the manner described by
+   Boos and Stefanski (2013), Essential Statistical Inference, section 2.5.3 and
+   inverting. In the other direction, the FamModel standard errors for h2_a and
+   sigma can be reproduced from the Mendel information matrix (inverse
+   covariance matrix) using the same approach.
+3) The Mendel loglikehood appears to omit the factor -(N/2) ln (2*pi), where
+   N is the number of non-probands. This factor is included in TMB's
+   multivariate normal density macro that is used in FamModel. Loglikelihoods
+   in Mendel and FamModel should differ by exactly this factor, and variance
+   component likelihood ratio chi-squared statistics calculated from the
+   difference in Mendel loglikelihoods should match FamModel output.
+4) The Mendel person outlier quadratic form appears to be the square of
+   r_star_hat, and the pedigree outlier statistic appears to be c_star_hat based
+   on discussion in the following references:
+
+   Lange K, Boehnke M (1983). Extensions to pedigree analysis. IV.
+   Covariance components models for multivariate traits.
+   American Journal of Medical Genetics 14:513-524.
+
+   Bauman L, Almasy L, Blangero J, Duggirala R, Sinsheimer JS, Lange K (2005).
+   Fishing for pleiotropic QTLs in a polygenic sea.
+   Annals of Human Genetics 69:590-611.

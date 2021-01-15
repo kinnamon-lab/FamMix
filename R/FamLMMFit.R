@@ -296,10 +296,11 @@ FamLMMFit <- R6Class(
       # r*
       omega_mat_inv <- as(Matrix::solve(omega_mat), "symmetricMatrix")
       T_hat_inv <- 1 / sqrt(Matrix::diag(omega_mat_inv))
-      r_star_hat <- Matrix::Diagonal(T_hat_inv) %*%
-          Matrix::solve(omega_mat, r_hat)
+      r_star_hat <- as.numeric(
+          Matrix::Diagonal(x = T_hat_inv) %*% Matrix::solve(omega_mat, r_hat)
+      )
       dx_non_pr <- data.table(
-        incl_ids[non_pr_mf_idxs], eta, r_hat, r_c_hat, r_s_hat, r_star_hat
+        incl_ids[non_pr_mf_idxs], eta_hat, r_hat, r_c_hat, r_s_hat, r_star_hat
       )
 
       # Add family-level diagnostics
