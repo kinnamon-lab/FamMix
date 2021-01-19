@@ -41,7 +41,10 @@ Constructs a new instance of this class.
 \item{\code{model_fit}}{An object inheriting from \code{\link{FamModelFit}}.}
 
 \item{\code{L_mat}}{A contrast vector (1 df) or \code{matrix} (>1 df) containing
-one contrast in each row.}
+one contrast in each row. The contrast vector must have a number of
+elements equal to the number of model parameters. The contrast matrix
+must be of full row rank and have a number of columns equal the number
+of model parameters.}
 
 \item{\code{m}}{An optional vector containing the null value for each contrast.
 Will be set to the zero vector of length \code{nrow(L_mat)} if not

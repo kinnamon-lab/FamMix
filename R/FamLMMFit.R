@@ -67,7 +67,7 @@ FamLMMFit <- R6Class(
         # loglikelihood) by default; must supply Hessian calculated with
         # analytical derivatives
         hess <- Matrix::Matrix(objfun[["he"]](private$theta_hat))
-        private$V_theta_hat <- Matrix::solve(hess)
+        private$V_theta_hat <- as.matrix(Matrix::solve(hess))
         par_list_names <- lapply(objfun[["env"]]$parameters, names)
         private$objfun_par_names <- names(objfun[["par"]])
         for (par_name in names(par_list_names)) {
@@ -207,7 +207,6 @@ FamLMMFit <- R6Class(
     #'   * `r_star_hat`: Individual-level goodness of fit statistic,
     #'     \eqn{\hat{r}^{*}_{ij}}. These are defined for family members
     #'     (\eqn{j \neq j_i}) only and are `NA` in the proband.
-    #'
     get_model_res = function(all = FALSE) {
       if (!all %in% c(TRUE, FALSE)) {
         stop("Argument all must be either TRUE or FALSE")
@@ -353,7 +352,7 @@ FamLMMFit <- R6Class(
       lmm_data <- private$lmm_data
       theta_gr <- private$objfun[["gr"]](private$theta_hat)
       theta_hat <- private$theta_hat
-      V_theta_hat <- as.matrix(private$V_theta_hat)
+      V_theta_hat <- private$V_theta_hat
       cat("\n===LINEAR MIXED MODEL RESULTS===\n")
       cat("DATA: ", private$data$get_data_name(), "\n", sep = "")
       cat("MEAN MODEL: ")
@@ -453,7 +452,6 @@ FamLMMFit <- R6Class(
     #'
     #' @return A [`data.table`] containing likelihood ratio test results,
     #'   invisibly.
-    #'
     get_h2_a_lrts = function(print = TRUE, use_cached = TRUE, ...) {
       if (!use_cached || is.null(private$h2_a_lrts)) {
         mod_data <- private$objfun[["env"]]$data

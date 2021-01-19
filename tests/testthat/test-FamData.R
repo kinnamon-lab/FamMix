@@ -23,7 +23,7 @@ test_that("Constructor works properly", {
   # Should throw error with unrecognized constructor signature
   expect_error(
     FamData$new(lmna_nonseg, family_id = "family_ID"),
-    "Unrecognized constructor signature"
+    regexp = "Unrecognized constructor signature"
   )
 
   # Both recognized constructor signatures should work
@@ -61,7 +61,15 @@ test_that("Constructor works properly", {
       maternal_id = "maternal_ID", paternal_id = "paternal_ID",
       mzgrp = "mzpair", dzgrp = "dzpair"
     ),
-    "Multiple rows found for the same individual"
+    regexp = "Multiple rows found for the same individual"
+  )
+  expect_error(
+    FamData$new(
+      rbind(lmna_nonseg, lmna_nonseg[1]), family_id = "family_ID",
+      indiv_id = "individual_ID", proband = "proband",
+      phi = fd_sig1_phi_perm
+    ),
+    regexp = "Multiple rows found for the same individual"
   )
 
   # A disjoint pedigree should trigger error with pedfile signature
@@ -72,7 +80,7 @@ test_that("Constructor works properly", {
       proband = "proband", sex = "sex", maternal_id = "maternal_ID",
       paternal_id = "paternal_ID", mzgrp = "mzpair", dzgrp = "dzpair"
     ),
-    "Incorrectly specified pedigrees"
+    regexp = "Incorrectly specified pedigrees"
   ))
 })
 

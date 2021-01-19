@@ -26,12 +26,12 @@ FamModelFit <- R6Class(
     #' @description Returns `list` of optimization results.
     get_optres = function() private$optres,
 
-    #' @description Returns \eqn{\hat{\theta}}, the vector of parameter
+    #' @description Returns \eqn{\hat{\theta}}, the numeric vector of parameter
     #'   estimates.
     get_theta_hat = function() private$theta_hat,
 
-    #' @description Returns \eqn{\hat{V}(\hat{\theta})}, the estimated
-    #'   covariance matrix of the parameter estimates.
+    #' @description Returns the numeric `matrix` \eqn{\hat{V}(\hat{\theta})},
+    #'   the estimated covariance matrix of the parameter estimates.
     get_V_theta_hat = function() private$V_theta_hat,
 
     # Print method ============================================================
@@ -46,11 +46,16 @@ FamModelFit <- R6Class(
     # Inferential methods =====================================================
 
     #' @description Create a new `Contrast` object.
+    #'
     #' @param L_mat A contrast vector (1 df) or `matrix` (>1 df) containing
-    #'   one contrast in each row.
+    #'   one contrast in each row. The contrast vector must have a number of
+    #'   elements equal to the number of model parameters. The contrast matrix
+    #'   must be of full row rank and have a number of columns equal the number
+    #'   of model parameters.
     #' @param m An optional vector containing the null value for each contrast.
     #'   Will be set to the zero vector of length `nrow(L_mat)` if not
     #'   specified.
+    #'
     #' @return A [`Contrast`] object for the specified arguments and this
     #'   model fit.
     contrast = function(L_mat, m) Contrast$new(self, L_mat, m)

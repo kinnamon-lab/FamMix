@@ -21,9 +21,13 @@ Contrast <- R6Class(
     # Constructor =============================================================
 
     #' @description Constructs a new instance of this class.
+    #'
     #' @param model_fit An object inheriting from [`FamModelFit`].
     #' @param L_mat A contrast vector (1 df) or `matrix` (>1 df) containing
-    #'   one contrast in each row.
+    #'   one contrast in each row. The contrast vector must have a number of
+    #'   elements equal to the number of model parameters. The contrast matrix
+    #'   must be of full row rank and have a number of columns equal the number
+    #'   of model parameters.
     #' @param m An optional vector containing the null value for each contrast.
     #'   Will be set to the zero vector of length `nrow(L_mat)` if not
     #'   specified.
@@ -35,8 +39,17 @@ Contrast <- R6Class(
       }
       if (is.vector(L_mat, mode = "numeric")) {
         L_mat <- matrix(L_mat, nrow = 1, ncol = length(L_mat), byrow = TRUE)
-      } else if (!is.matrix(L_mat)) {
+      } else if (!is.numeric(L_mat) || !is.matrix(L_mat)) {
         stop("Argument L_mat must be a numeric vector or matrix")
+      }
+      if (ncol(L_mat) != length(model_fit$get_theta_hat())) {
+        stop(
+          "Argument L_mat must have exactly as many elements (vector) or ",
+          "columns (matrix) as model parameters"
+        )
+      }
+      if (Matrix::rankMatrix(L_mat) != nrow(L_mat)) {
+        stop("Argument L_mat must be of full row rank")
       }
       if (missing(m)) {
         m <- rep(0, nrow(L_mat))
@@ -54,9 +67,9 @@ Contrast <- R6Class(
         L_mat
       )
       X2 <- drop(
-        crossprod(L_theta_hat - m, solve(V_L_theta_hat, L_theta_hat - m))
+        crossprod(L_theta_hat_m, solve(V_L_theta_hat, L_theta_hat_m))
       )
-      df_X2 <- Matrix::rankMatrix(L_mat)
+      df_X2 <- nrow(L_mat)
       p_X2 <- pchisq(X2, df = df_X2, lower.tail = FALSE)
       private$L_mat <- L_mat
       private$m <- m
@@ -99,6 +112,7 @@ Contrast <- R6Class(
     # Print method ============================================================
 
     #' @description Formatted printing of the `Contrast` object.
+    #'
     #' @param ... Arguments passed on to [print_ests()].
     print = function(...) {
       cat("\n=== CONTRAST ===\n")

@@ -46,7 +46,7 @@ Returns \code{list} of optimization results.
 \if{html}{\out{<a id="method-get_theta_hat"></a>}}
 \if{latex}{\out{\hypertarget{method-get_theta_hat}{}}}
 \subsection{Method \code{get_theta_hat()}}{
-Returns \eqn{\hat{\theta}}, the vector of parameter
+Returns \eqn{\hat{\theta}}, the numeric vector of parameter
 estimates.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{FamModelFit$get_theta_hat()}\if{html}{\out{</div>}}
@@ -57,8 +57,8 @@ estimates.
 \if{html}{\out{<a id="method-get_V_theta_hat"></a>}}
 \if{latex}{\out{\hypertarget{method-get_V_theta_hat}{}}}
 \subsection{Method \code{get_V_theta_hat()}}{
-Returns \eqn{\hat{V}(\hat{\theta})}, the estimated
-covariance matrix of the parameter estimates.
+Returns the numeric \code{matrix} \eqn{\hat{V}(\hat{\theta})},
+the estimated covariance matrix of the parameter estimates.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{FamModelFit$get_V_theta_hat()}\if{html}{\out{</div>}}
 }
@@ -94,7 +94,10 @@ Create a new \code{Contrast} object.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{L_mat}}{A contrast vector (1 df) or \code{matrix} (>1 df) containing
-one contrast in each row.}
+one contrast in each row. The contrast vector must have a number of
+elements equal to the number of model parameters. The contrast matrix
+must be of full row rank and have a number of columns equal the number
+of model parameters.}
 
 \item{\code{m}}{An optional vector containing the null value for each contrast.
 Will be set to the zero vector of length \code{nrow(L_mat)} if not
