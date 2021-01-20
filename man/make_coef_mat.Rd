@@ -15,24 +15,24 @@ make_coef_mat(
 )
 }
 \arguments{
-\item{theta_hat}{A named vector of parameter estimates.}
+\item{theta_hat}{A named numeric vector of parameter estimates.}
 
-\item{V_theta_hat}{The covariance matrix of the parameter estimates in
-\code{theta_hat}.}
+\item{V_theta_hat}{A numeric \code{matrix} containing the covariance matrix of the
+parameter estimates in \code{theta_hat}. If the matrix has row or column
+names, a warning will be given if they do not match those in \code{theta_hat}.}
 
-\item{trans}{A function accepting a single argument (e.g., \code{exp}) that
-is used to transform parameter estimates and confidence intervals. All
-tests and standard errors are still on the untransformed scale.}
+\item{trans}{A function accepting a single argument (e.g., \code{exp}) that is
+used to transform parameter estimates and confidence intervals. All tests
+and standard errors are still on the untransformed scale.}
 
 \item{alpha}{The alpha level for the confidence intervals; default 0.05.}
 
 \item{SEs}{\code{TRUE} (default) if standard errors should be reported.}
 
-\item{CIs}{\code{TRUE} (default) if \eqn{100(1 - \alpha)}\% CIs should be
-reported.}
+\item{CIs}{\code{TRUE} (default) if \eqn{100(1 - \alpha)}\% CIs should be reported.}
 
-\item{tests}{\code{TRUE}(default) if Wald test statistics and p-values based
-on the normal distribution should be reported.}
+\item{tests}{\code{TRUE} (default) if Wald test statistics and p-values based on
+the normal distribution should be reported.}
 }
 \value{
 A \code{matrix} with row names given by the names of \code{theta_hat}

@@ -12,19 +12,18 @@ print_ests(theta_hat, V_theta_hat, trans, ...)
 \item{V_theta_hat}{The covariance matrix of the parameter estimates in
 \code{theta_hat}.}
 
-\item{trans}{A function accepting a single argument (e.g., \code{exp}) that
-is used to transform parameter estimates and confidence intervals. All
-tests and standard errors are still on the untransformed scale.}
+\item{trans}{A function accepting a single argument (e.g., \code{exp}) that is
+used to transform parameter estimates and confidence intervals. All tests
+and standard errors are still on the untransformed scale.}
 
 \item{...}{
   Arguments passed on to \code{\link[=make_coef_mat]{make_coef_mat}}, \code{\link[stats:printCoefmat]{stats::printCoefmat}}
   \describe{
     \item{\code{alpha}}{The alpha level for the confidence intervals; default 0.05.}
     \item{\code{SEs}}{\code{TRUE} (default) if standard errors should be reported.}
-    \item{\code{CIs}}{\code{TRUE} (default) if \eqn{100(1 - \alpha)}\% CIs should be
-reported.}
-    \item{\code{tests}}{\code{TRUE}(default) if Wald test statistics and p-values based
-on the normal distribution should be reported.}
+    \item{\code{CIs}}{\code{TRUE} (default) if \eqn{100(1 - \alpha)}\% CIs should be reported.}
+    \item{\code{tests}}{\code{TRUE} (default) if Wald test statistics and p-values based on
+the normal distribution should be reported.}
     \item{\code{digits}}{minimum number of significant digits to be used for
     most numbers.}
     \item{\code{signif.stars}}{logical; if \code{TRUE}, P-values are additionally

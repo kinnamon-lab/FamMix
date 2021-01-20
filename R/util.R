@@ -6,26 +6,59 @@
 #' \eqn{100(1 - \alpha)}% CIs, Z statistics, and p-values given an input
 #' vector of parameter estimates and their standard errors.
 #'
-#' @param theta_hat A named vector of parameter estimates.
-#' @param V_theta_hat The covariance matrix of the parameter estimates in
-#'   `theta_hat`.
-#' @param trans A function accepting a single argument (e.g., `exp`) that
-#'   is used to transform parameter estimates and confidence intervals. All
-#'   tests and standard errors are still on the untransformed scale.
+#' @param theta_hat A named numeric vector of parameter estimates.
+#' @param V_theta_hat A numeric `matrix` containing the covariance matrix of the
+#'   parameter estimates in `theta_hat`. If the matrix has row or column
+#'   names, a warning will be given if they do not match those in `theta_hat`.
+#' @param trans A function accepting a single argument (e.g., `exp`) that is
+#'   used to transform parameter estimates and confidence intervals. All tests
+#'   and standard errors are still on the untransformed scale.
 #' @param alpha The alpha level for the confidence intervals; default 0.05.
 #' @param SEs `TRUE` (default) if standard errors should be reported.
-#' @param CIs `TRUE` (default) if \eqn{100(1 - \alpha)}% CIs should be
-#'   reported.
-#' @param tests `TRUE`(default) if Wald test statistics and p-values based
-#'   on the normal distribution should be reported.
+#' @param CIs `TRUE` (default) if \eqn{100(1 - \alpha)}% CIs should be reported.
+#' @param tests `TRUE` (default) if Wald test statistics and p-values based on
+#'   the normal distribution should be reported.
 #'
 #' @return A `matrix` with row names given by the names of `theta_hat`
 #'   containing the requested columns.
 #'
 #' @export
 make_coef_mat <- function(theta_hat, V_theta_hat, trans, alpha = 0.05,
-  SEs = TRUE, CIs = TRUE, tests = TRUE) {
-  cl <- 100 * (1 - alpha)
+                          SEs = TRUE, CIs = TRUE, tests = TRUE) {
+  if (
+    !is.vector(theta_hat, mode = "numeric") || is.null(names(theta_hat)) ||
+    length(theta_hat) == 0
+  ) {
+    stop("Argument theta_hat must be a named numeric vector")
+  }
+  if (
+    is.null(V_theta_hat) || !is.numeric(V_theta_hat) ||
+    !is.matrix(V_theta_hat) ||
+    !isSymmetric(V_theta_hat, check.attributes = FALSE) ||
+    nrow(V_theta_hat) != length(theta_hat) ||
+    ncol(V_theta_hat) != length(theta_hat)
+  ) {
+    stop("Argument V_theta_hat must be a numeric covariance matrix")
+  }
+  if (
+    (
+      !is.null(rownames(V_theta_hat)) &&
+      !identical(rownames(V_theta_hat), names(theta_hat))
+    ) || (
+      !is.null(colnames(V_theta_hat)) &&
+      !identical(colnames(V_theta_hat), names(theta_hat))
+    )
+  ) {
+    warning("Row/column names of V_theta_hat differ from those of theta_hat")
+  }
+  if (!between(alpha, 0, 1, incbounds = FALSE)) {
+    stop("Argument alpha must be in (0, 1)")
+  } else {
+    cl <- 100 * (1 - alpha)
+  }
+  if (!is.logical(SEs) || !is.logical(CIs) || !is.logical(tests)) {
+    stop("Non-logical argument supplied where TRUE/FALSE is required")
+  }
   se_theta_hat <- sqrt(diag(V_theta_hat))
   trans_suff <- ""
   if (tests) Z <- theta_hat / se_theta_hat
@@ -33,13 +66,16 @@ make_coef_mat <- function(theta_hat, V_theta_hat, trans, alpha = 0.05,
     lcl_theta <- theta_hat - se_theta_hat * stats::qnorm(1 - alpha / 2)
     ucl_theta <- theta_hat + se_theta_hat * stats::qnorm(1 - alpha / 2)
   }
-  if (!missing(trans) && is.function(trans) &&
-    length(formals(trans)) == 1) {
-    trans_suff <- " (tr)"
-    theta_hat <- trans(theta_hat)
-    if (CIs) {
-      lcl_theta <- trans(lcl_theta)
-      ucl_theta <- trans(ucl_theta)
+  if (!missing(trans)) {
+    if (is.function(trans) && length(formals(args(trans))) == 1) {
+      trans_suff <- " (tr)"
+      theta_hat <- trans(theta_hat)
+      if (CIs) {
+        lcl_theta <- trans(lcl_theta)
+        ucl_theta <- trans(ucl_theta)
+      }
+    } else {
+      stop("Argument trans must be a function with exactly one argument")
     }
   }
   coef_mat <- theta_hat
@@ -74,9 +110,9 @@ make_coef_mat <- function(theta_hat, V_theta_hat, trans, alpha = 0.05,
 #' @param theta_hat A named vector of parameter estimates.
 #' @param V_theta_hat The covariance matrix of the parameter estimates in
 #'   `theta_hat`.
-#' @param trans A function accepting a single argument (e.g., `exp`) that
-#'   is used to transform parameter estimates and confidence intervals. All
-#'   tests and standard errors are still on the untransformed scale.
+#' @param trans A function accepting a single argument (e.g., `exp`) that is
+#'   used to transform parameter estimates and confidence intervals. All tests
+#'   and standard errors are still on the untransformed scale.
 #' @inheritDotParams make_coef_mat
 #' @inheritDotParams stats::printCoefmat -x -cs.ind -tst.ind
 #'
@@ -101,8 +137,10 @@ print_ests <- function(theta_hat, V_theta_hat, trans, ...) {
   )
   cat("\nParameter Estimates\n")
   cat("-------------------\n")
-  if (!missing(trans) && is.function(trans) && length(formals(trans)) == 1) {
-    cat("Transformation:", deparse(trans)[-1], "\n")
+  if (
+    !missing(trans) && is.function(trans) && length(formals(args(trans))) == 1
+  ) {
+    cat("Transformation:", substitute(trans), "\n")
   }
   do.call(stats::printCoefmat, printCoefmat_args)
 }
