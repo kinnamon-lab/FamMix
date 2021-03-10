@@ -4,7 +4,6 @@
 # FamModel
 
 <!-- badges: start -->
-
 <!-- badges: end -->
 
 This package implements regression models for family-based genetic
@@ -29,12 +28,13 @@ where `[tag]` is the tag of the most recent release.
 ## Example
 
 The following code fits a univariate version of the linear mixed model
-presented in [Cowan et al.
-(2018)](https://doi.org/10.1161/CIRCGEN.117.002038) with an equivalent
-parameterization using the `lmna_nonseg` example data provided with the
-package. Note how the package permits flexible use of `formula`
-constructs and provides an appropriate likelihood ratio test for a null
-narrow-sense heritability on the boundary of the parameter space.
+presented in [Cowan et
+al. (2018)](https://doi.org/10.1161/CIRCGEN.117.002038) with an
+equivalent parameterization using the `lmna_nonseg` example data
+provided with the package. Note how the package permits flexible use of
+`formula` constructs and provides an appropriate likelihood ratio test
+for a null narrow-sense heritability on the boundary of the parameter
+space.
 
 ``` r
 lmna_data <- copy(lmna_nonseg)[,
@@ -61,63 +61,58 @@ lmna_lvef_model <- lmna_fd$lmm(
 lmna_lvef_model$print()
 ```
 
-``` 
 
-===LINEAR MIXED MODEL RESULTS===
-DATA: lmna_data
-MEAN MODEL: lvef ~ age_echo_std + female + I(n_lmna_vars > 0) + I(n_oth_vars > 
-    0)
-VARIANCE PARAMETER GROUPS: ~1
+    ===LINEAR MIXED MODEL RESULTS===
+    DATA: lmna_data
+    MEAN MODEL: lvef ~ age_echo_std + female + I(n_lmna_vars > 0) + I(n_oth_vars > 
+        0)
+    VARIANCE PARAMETER GROUPS: ~1
 
-FAMILIES USED: 5
-SUBJECTS USED: 36
-PROBANDS: 5
-FAMILY SIZE DISTRIBUTION:
- 2 4 7 19
-         
- 1 2 1  1
-CONVERGENCE ACHIEVED AT -2 LL = 251.2582
-EVALUATIONS:
-function gradient 
-      17       17 
-MESSAGE: CONVERGENCE: REL_REDUCTION_OF_F <= FACTR*EPSMCH
-MAX ABSOLUTE ELEMENT OF LL GRADIENT (g) AT SOLUTION: 1.796447e-05
-NEGATIVE LL HESSIAN (-H) CHARACTERISTICS AT SOLUTION:
-   SMALLEST EIGENVALUE: 2.071124e-02
-   RECIPROCAL CONDITION NUMBER: 2.204337e-03
-SCALED LL GRADIENT (-g' * H^-1 * g) CRITERION AT SOLUTION: 2.967911e-09
+    FAMILIES USED: 5
+    SUBJECTS USED: 36
+    PROBANDS: 5
+    FAMILY SIZE DISTRIBUTION:
+     2 4 7 19
+             
+     1 2 1  1
+    CONVERGENCE ACHIEVED AT -2 LL = 251.2582
+    EVALUATIONS:
+    function gradient 
+          22       22 
+    MESSAGE: CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL
+    MAX ABSOLUTE ELEMENT OF LL GRADIENT (g) AT SOLUTION: 2.111348e-06
+    NEGATIVE LL HESSIAN (-H) CHARACTERISTICS AT SOLUTION:
+       SMALLEST EIGENVALUE: 2.071145e-02
+       RECIPROCAL CONDITION NUMBER: 2.204369e-03
+    SCALED LL GRADIENT (-g' * H^-1 * g) CRITERION AT SOLUTION: 5.39971e-12
 
-VARIANCE PARAMETERS
+    VARIANCE PARAMETERS
 
-Parameter Estimates
--------------------
-      Estimate       SE
-h2_a   0.35480  0.59386
-sigma 14.23758  2.05036
+    Parameter Estimates
+    -------------------
+          Estimate       SE
+    h2_a   0.35479  0.59385
+    sigma 14.23753  2.05032
 
-Likelihood Ratio Tests
-----------------------
-       Ho      Max |g| -g' * H^-1 * g Min lambda(-H) 1 / kappa(-H)  LR X^2 DF Pr(> X^2)
- h2_a = 0 9.973149e-06   1.922893e-09   2.038053e-02  6.473839e-02 0.48601  1   0.24286
+    Likelihood Ratio Tests
+    ----------------------
+           Ho      Max |g| -g' * H^-1 * g Min lambda(-H) 1 / kappa(-H)  LR X^2 Pr(> X^2)
+     h2_a = 0 1.788213e-08   1.015742e-15   2.038056e-02  6.473824e-02 0.48601   0.24286
 
-NOTE: P-values are calculated from a 50:50 mixture of chi-square(0)
-      and chi-square(1) per Self and Liang (1987)
+    MEAN MODEL
 
-MEAN MODEL
+    Parameter Estimates
+    -------------------
+                            Estimate        SE   95% LCL   95% UCL Z value  Pr(>|Z|)    
+    (Intercept)             50.64295   5.90382  39.07168  62.21423  8.5780 < 2.2e-16 ***
+    age_echo_std            -5.75982   3.17743 -11.98747   0.46782 -1.8127  0.069873 .  
+    female                   3.40805   5.29036  -6.96087  13.77697  0.6442  0.519446    
+    I(n_lmna_vars > 0)TRUE   3.38145   5.73934  -7.86745  14.63035  0.5892  0.555747    
+    I(n_oth_vars > 0)TRUE  -13.31168   5.15733 -23.41986  -3.20351 -2.5811  0.009848 ** 
+    ---
+    Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
-Parameter Estimates
--------------------
-                        Estimate        SE   95% LCL   95% UCL Z value  Pr(>|Z|)    
-(Intercept)             50.64281   5.90390  39.07138  62.21425  8.5779 < 2.2e-16 ***
-age_echo_std            -5.75977   3.17743 -11.98741   0.46788 -1.8127  0.069876 .  
-female                   3.40821   5.29036  -6.96070  13.77712  0.6442  0.519426    
-I(n_lmna_vars > 0)TRUE   3.38168   5.73935  -7.86724  14.63059  0.5892  0.555721    
-I(n_oth_vars > 0)TRUE  -13.31161   5.15733 -23.41980  -3.20342 -2.5811  0.009849 ** 
----
-Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-
-NOTE: Wald tests and CIs are displayed in the above output
-```
+    NOTE: Wald tests and CIs are displayed in the above output
 
 ## Acknowledgements
 

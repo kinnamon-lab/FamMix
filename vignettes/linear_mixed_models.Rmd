@@ -42,7 +42,7 @@ on the variables $\mathbf{X}_i$ and the randomly mating population $q_i$ to
 which all family founders belong is:
 
 \begin{gather}
-\mathbf{y}_i | \mathbf{X}_i, q_i; \theta \sim
+\mathbf{y}_i | \mathbf{X}_i, q_i, \Phi_i; \theta \sim
   MVN \left( \mu_i, \Sigma_i \right) \\
 \mu_i = \mathbf{X}_i\beta \\
 \Sigma_i = 2\Phi_i h^2_{a, q_i} \sigma^2_{q_i} +
@@ -66,7 +66,7 @@ their original order. For example, if $j_i = 3$, we have $\mathbf{y}_{i (-j_i)}
 we can write the appropriate conditional distribution as:
 
 \begin{gather}
-\mathbf{y}_{i(-j_i)} | y_{i j_i}, \mathbf{X}_i, q_i; \theta \sim
+\mathbf{y}_{i(-j_i)} | y_{i j_i}, \mathbf{X}_i, q_i, \Phi_i; \theta \sim
   MVN\left(\eta_i, \Omega_i \right) \\
 \eta_i = \mathbf{X}_{i (-j_i)}\beta +
   \Sigma_{i(-j_i)j_i} \Sigma_{i j_i j_i}^{-1}
@@ -86,44 +86,45 @@ probability of the same individual being sampled in two families is zero, and
 the conditional probability of the sample of $N$ families is the product of the
 conditional densities from (\\ref{eq:conddist}). Denoting each density from
 (\\ref{eq:conddist}) by $f\left(\mathbf{y}_{i(-j_i)} | y_{i j_i}, \mathbf{X}_i,
-q_i; \theta\right)$, the conditional likelihood is:
+q_i, \Phi_i; \theta\right)$, the conditional likelihood is:
 
 \begin{equation}
 L\left(\theta\right)
   = f\left(\mathbf{y}_{\mathrm{np}} | \mathbf{y}_{\mathrm{p}}, \mathbf{X},
-    \mathbf{q}; \theta \right)
-  = \prod_{i=1}^N f\left(\mathbf{y}_{i(-j_i)} | y_{i j_i}, \mathbf{X}_i, q_i;
-    \theta \right)
+    \mathbf{q}, \Phi; \theta \right)
+  = \prod_{i=1}^N f\left(\mathbf{y}_{i(-j_i)} | y_{i j_i}, \mathbf{X}_i, q_i,
+    \Phi_i ; \theta \right)
 \tag{3}
 \label{eq:condlik}
 \end{equation}
 
-where $\mathbf{y}_{\mathrm{np}} = \left[\mathbf{y}^{'}_{1(-j_1)}, ...,
-\mathbf{y}^{'}_{N(-j_N)}\right]^{'} = \left[\mathbf{y}^{'}_{\mathrm{np},1}, ...,
-\mathbf{y}^{'}_{\mathrm{np},N}\right]^{'}$, $\mathbf{y}_{\mathrm{p}} =
-\left[y_{1 j_1}, ..., y_{N j_N}\right]^{'}$, $\mathbf{X} =
-\left[\mathbf{X}^{'}_1 \mid ... \mid \mathbf{X}^{'}_N\right]^{'}$, and
-$\mathbf{q} = \left[q_1, ..., q_N\right]^{'}$.
+where $\mathbf{y}_{\mathrm{np}} = \{\mathbf{y}_{1(-j_1)}, ...,
+\mathbf{y}_{N(-j_N)}\} = \{\mathbf{y}_{\mathrm{np},1}, ...,
+\mathbf{y}_{\mathrm{np},N}\}$, $\mathbf{y}_{\mathrm{p}} = \{y_{1 j_1}, ...,
+y_{N j_N}\}$, $\mathbf{X} = \{\mathbf{X}_1, ..., \mathbf{X}_N\}$, $\mathbf{q} =
+\{q_1, ..., q_N\}$, and $\Phi = \{\Phi_1, ..., \Phi_N\}$.
 
 ## Optimization
 
 From the definition of conditional probability, we can restate the conditional
 likelihood in (\\ref{eq:condlik}) in a more convenient form for
-optimization. Letting $f\left(\mathbf{y}_{i} | \mathbf{X}_i, q_i; \theta
+optimization. Letting $f\left(\mathbf{y}_{i} | \mathbf{X}_i, q_i, \Phi_i; \theta
 \right)$ denote the joint density from (\\ref{eq:popdist}) and
-$f\left(y_{i j_i} | \mathbf{x}_{i j_i}, q_i; \theta \right)$ denote the marginal
-$N\left(\mathbf{x}_{i j_i} \beta, \Sigma_{i j_i j_i}\right)$ density of
-$y_{i j_i}$ obtained from this joint density, our objective is to maximize the
-loglikelihood:
+$f\left(y_{i j_i} | \mathbf{x}_{i j_i}, q_i, \Phi_{i j_i j_i}; \theta \right)$
+denote the marginal $N\left(\mathbf{x}_{i j_i} \beta, \Sigma_{i j_i j_i}\right)$
+density of $y_{i j_i}$ obtained from this joint density, our objective is to
+maximize the loglikelihood:
 
 \begin{equation}
 \begin{split}
 l\left(\theta\right) &=
-  \sum_{i=1}^N \ln f\left(\mathbf{y}_{i(-j_i)} | y_{i j_i}, \mathbf{X}_i, q_i;
-  \theta \right) \\
+  \sum_{i=1}^N \ln f\left(\mathbf{y}_{i(-j_i)} | y_{i j_i}, \mathbf{X}_i, q_i,
+  \Phi_i, \theta \right) \\
 &= \sum_{i=1}^{N} \left(
-  \ln f\left(\mathbf{y}_{i} | \mathbf{X}_i, q_i; \theta\right) -
-  \ln f\left(y_{i j_i} | \mathbf{x}_{i j_i}, q_i; \theta\right)
+    \ln f\left(\mathbf{y}_{i} | \mathbf{X}_i, q_i, \Phi_i; \theta\right) -
+    \ln f\left(
+      y_{i j_i} | \mathbf{x}_{i j_i}, q_i, \Phi_{i j_i j_i}; \theta
+    \right)
   \right)
 \end{split}
 \tag{4}
@@ -145,21 +146,22 @@ parameters $\theta$ by a diagonal matrix $D$ and perform optimization on
 $D\theta$. The matrix $D$ is the chosen so that the diagonal elements of the
 Hessian approximation in the L-BFGS-B algorithm will be approximately 1, as
 suggested by @fletcher2000 [p. 59]. In particular, $D =
-\mathrm{diag}\left(\sqrt{-H_{11}(\theta_0)}, ...,
-\sqrt{-H_{pp}(\theta_0)}\right)$, where $\mathrm{diag}$ indicates a (block)
-diagonal matrix with zeros off the main (block) diagonal and $\theta_0$ is the
-vector of initial parameter estimates. This affine transformation should also
-yield a more spherical trust region in the transformed parameter space
-[@nocedal2006, pp. 95-7]. If any of the $\sqrt{-H_{ii}(\theta_0)}$ are infinite
-or invalid, $D$ defaults to the identity matrix. Otherwise, any elements of $D$
-that are $<\sqrt{\epsilon}$, where $\epsilon$ is the double-precision
-floating-point epsilon, are set to the minimum of other $D$ elements greater
-than or equal to this quantity. The objective function value is scaled by the
-inverse of its value at $\theta_0$ because the stopping criteria are not scale
-invariant [@zhu1997]. Default stopping criteria are a relative reduction in the
-objective function of <1e-10 or a maximum absolute projected gradient element
-$<\sqrt{\epsilon}$. These tolerances, but not scaling choices, can be overriden
-by the user.
+\mathrm{diag}\left(\sqrt{-H_{11}(\theta^{(0)})}, ...,
+\sqrt{-H_{pp}(\theta^{(0)}}\right)$, where $\mathrm{diag}$ indicates a (block)
+diagonal matrix with zeros off the main (block) diagonal and $\theta^{(0)}$ is
+the vector of initial parameter estimates. This affine transformation should
+also yield a more spherical trust region in the transformed parameter space
+[@nocedal2006, pp. 95-7]. If any of the $\sqrt{-H_{ii}(\theta^{(0)})}$ are
+infinite or invalid, $D$ defaults to the identity matrix. Otherwise, any
+elements of $D$ that are $<\sqrt{\epsilon}$, where $\epsilon$ is the
+double-precision floating-point epsilon, are set to the minimum of other $D$
+elements greater than or equal to this quantity. The objective function value is
+scaled by the inverse of its value at $\theta^{(0)}$ because the stopping
+criteria are not scale invariant [@zhu1997]. Default stopping criteria are a
+maximum absolute projected gradient element $<\sqrt{\epsilon}$ or no change in
+the objective function between iterations (i.e., `factr = 0` in
+`optim()`). These tolerances, but not scaling choices, can be overriden by the
+user.
 
 The [`FamLMMFit$print()`](../reference/FamLMMFit.html#method-print) method
 provides optimization diagnostics, including the covergence status and message
@@ -172,15 +174,141 @@ g(\hat{\theta}) \rVert_\infty$, and the scaled gradient criterion
 $-g(\hat{\theta})^{'} H(\hat{\theta})^{-1} g(\hat{\theta})$ recommended by
 @belsley1980. The first of these is not invariant to parameter scaling, and both
 of these may differ substantially from zero when the solution is on the boundary
-for one or more parameters.
+for one or more parameters. However, it is worth noting that the maximum
+absolute _projected_ gradient element is still $<\sqrt{\epsilon}$ under these
+circumstances if the output indicates that this convergence criterion was
+satisfied.
 
 ## Inference
 
-The Hessian of the negative loglikelihood evaluated at the maximum likelihood
-estimates, $-H(\hat{\theta})$, is also the observed information matrix, and the
-estimated covariance matrix of the parameter estimates, $\hat{V}(\hat{\theta})$,
-is obtained as its inverse.  Wald tests and confidence intervals using the
-standard normal distribution are produced for the $\beta$ parameters by the
+Because $h^2_{a, q_i}$ can have a true value on the boundary of the parameter
+space (i.e., zero), standard asymptotic results for maximum likelihood
+estimators may not always apply. Let $\theta_0 \in \Theta \subset \mathbb{R}^p$
+denote the true value of the parameter vector, which may be on the boundary of
+the parameter space. Futher, let $g_i(\theta)$ and $H_i(\theta)$ denote the
+score and Hessian component for one family evaluated at $\theta$ so that
+$g(\theta) = \sum_{i=1}^N g_i(\theta)$ and $H(\theta) = \sum_{i=1}^N
+H_i(\theta)$. It immediately follows under the usual regularity conditions on
+the density $f\left(\mathbf{y}_{i(-j_i)} | y_{i j_i}, \mathbf{X}_i, q_i, \Phi_i;
+\theta \right)$ [@greene2003] that:
+
+\begin{gather}
+\mathrm{E}\left[g_i(\theta_0) | y_{i j_i}, \mathbf{X}_i, q_i, \Phi_i;
+  \theta_0 \right] = \mathbf{0} \\
+\mathrm{Var}\left(g_i(\theta_0) | y_{i j_i}, \mathbf{X}_i, q_i, \Phi_i;
+  \theta_0\right)=E\left[-H_i(\theta_0) | y_{i j_i}, \mathbf{X}_i, q_i, \Phi_i;
+  \theta_0 \right] =
+I_i\left(\theta_0\right)
+\end{gather}
+
+As long as no $I_i\left(\theta_0\right)$ dominates the average and $\underset{N
+\rightarrow \infty}{\lim} N^{-1} \sum_{i=1}^{N} I_i\left(\theta_0\right) =
+\bar{I}\left(\theta_0\right)$, a finite, positive-definite matrix, in the
+neighborhood of $\theta_0$ it follows that:
+
+\begin{gather}
+N^{-1/2} g(\theta_0) \overset{d}{\longrightarrow}
+  MVN\left(\mathbf{0}, \bar{I}\left(\theta_0\right)\right) \\
+N^{-1} H(\theta_0) \overset{p}{\longrightarrow} -\bar{I}\left(\theta_0\right)
+\end{gather}
+
+The first convergence follows from the Multivariate Lindeberg-Feller Central
+Limit Theorem, and the second from applying Chebyshev's Weak Law of Large
+Numbers to each matrix component [@greene2003]. If the expectation of the
+absolute value of the third derivative of the loglikelihood is $O(N)$, then the
+regularity conditions of Self and Liang [-@self1987] are satisfied and
+$\hat{\theta} \overset{p}{\longrightarrow} \theta_0$, even if $\theta_0$ is on
+the boundary of the parameter space. Futhermore, in the neighborhood of
+$\theta_0$, the loglikelihood ratio admits a quadratic Taylor series expansion
+equivalent to [@self1987]:
+
+\begin{equation}
+l\left(\theta_0 + N^{-1/2} \lambda\right) - l\left(\theta_0\right) =
+  \lambda^{'} N^{-1/2} g(\theta_0) -
+  \frac{1}{2} \lambda^{'} \bar{I}\left(\theta_0\right) \lambda + o_p(1)
+\end{equation}
+
+where $\lambda$ is in the local parameter space $\Lambda_N =
+\sqrt{N}\left(\Theta - \theta_0\right)$. Based on this expansion, the sequence
+of models with increasing $N$ is locally asymptotically normal at $\theta_0$
+[@vandervaart2007]. Assuming that $\Lambda_N \rightarrow \Lambda$, a convex cone
+at the origin, as $N \rightarrow \infty$, the asymptotic distribution of
+$\sqrt{N}\left(\hat{\theta} - \theta_0\right)$ is the same as that of
+$\hat{\lambda}$ obtained as [@vandervaart2007, Theorem 7.12; @self1987, Theorem
+2]:
+
+\begin{gather}
+\hat{\lambda} =
+  \underset{\lambda \in \Lambda}{\arg\min}
+  \left(\mathbf{z} - \lambda\right)^{'}
+  \bar{I}\left(\theta_0\right) \left(\mathbf{z} - \lambda\right) \\
+\mathbf{z} \sim MVN\left(\mathbf{0}, \bar{I}\left(\theta_0\right)^{-1}\right)
+\end{gather}
+
+When $\theta_0$ is an interior point of $\Theta$, $\Lambda = \mathbb{R}^p$,
+$\hat{\lambda} = \mathbf{z}$, and the parameter vector has the usual asymptotic
+multivariate normal distribution. When some parameters are on the boundary,
+$\Lambda$ has dimensions that are $\left[0, \infty\right)$ or $\left(-\infty,
+0\right]$, $\hat{\lambda} \neq \mathbf{z}$, and usual results do not apply.
+
+Nonetheless, valid Wald inferences using standard procedures can still be
+obtained for subsets of parameters orthogonal to those that fall on the
+boundary. Suppose that $\theta$ can be partitioned into $\left[\theta^{'}_1,
+\theta^{'}_2\right]^{'}$ that are orthogonal in the sense that the average
+expected information at the true values is $\bar{I}\left(\theta_0\right) =
+\mathrm{diag}\left(\bar{I}\left(\theta_{10}\right),
+\bar{I}\left(\theta_{20}\right)\right)$. Further suppose that $\theta_{20}$ may
+fall on the boundary of $\Theta_2$ but that $\theta_{10}$ is an interior point
+of $\Theta_1$. From above, the asymptotic distribution is the same as that of
+$\hat{\lambda}$ obtained as:
+
+\begin{equation}
+\begin{split}
+\hat{\lambda} &=
+  \underset{
+    \left(\lambda_1, \lambda_2\right) \in \Lambda_1 \times \Lambda_2
+  }{\arg\min}
+  \begin{bmatrix}
+    \left(\mathbf{z}_1 - \lambda_1\right)^{'} &
+    \left(\mathbf{z}_2 - \lambda_2\right)^{'}
+  \end{bmatrix}
+  \begin{bmatrix}
+    \bar{I}\left(\theta_{10}\right) & \mathbf{0} \\
+    \mathbf{0} &   \bar{I}\left(\theta_{20}\right)
+  \end{bmatrix}
+  \begin{bmatrix}
+    \mathbf{z}_1 - \lambda_1 \\ \mathbf{z}_2 - \lambda_2
+  \end{bmatrix} \\
+&= \underset{
+    \left(\lambda_1, \lambda_2\right) \in \Lambda_1 \times \Lambda_2
+  }{\arg\min}
+  \left[
+    \left(\mathbf{z}_1 - \lambda_1\right)^{'}
+    \bar{I}\left(\theta_{10}\right) \left(\mathbf{z}_1 - \lambda_1\right) +
+    \left(\mathbf{z}_2 - \lambda_2\right)^{'}
+    \bar{I}\left(\theta_{20}\right) \left(\mathbf{z}_2 - \lambda_2\right)
+  \right]
+\end{split}
+\end{equation}
+
+Because the term in brackets is the sum of two positive definite quadratic
+forms, the value of $\lambda_1$ in $\Lambda_1 = \mathbb{R}^p$ that minimizes the
+above quantity is $\mathbf{z}_1$ for any value of $\lambda_2$ that minimizes the
+second term, meaning that $\hat{\lambda}_1 = \mathbf{z}_1$ regardless of whether
+any parameter in $\theta_{20}$ is on the boundary of $\Theta_2$. In this case,
+$\hat{\theta}_1$ has the usual asymptotic $MVN\left(\theta_{10}, N^{-1}
+\bar{I}\left(\theta_{10}\right)^{-1} \right)$ as long as $\theta_{10}$ is an
+interior point of $\Theta_1$. As a result, Wald inferences for any set of
+parameters are asymptotically valid as long as the parameters of interest and
+all parameters that are not orthogonal to them have true values in the interior
+of the parameter space.
+
+For Wald inference, the estimated covariance matrix of the parameter estimates
+is obtained from the observed information as $\hat{V}(\hat{\theta}) =
+-H(\hat{\theta})^{-1}$, which is equivalent to estimating
+$\bar{I}\left(\theta_{0}\right)$ by $-N^{-1} H(\hat{\theta})$.  Wald tests and
+confidence intervals using the standard normal distribution are produced for the
+$\beta$ parameters by the
 [`FamLMMFit$print()`](../reference/FamLMMFit.html#method-print) method, and Wald
 tests and confidence intervals for general linear contrasts of the form
 $L\theta - m = 0$ can be obtained with the inherited
@@ -192,6 +320,64 @@ hypothesis $L\theta - m = 0$ with df equal to $\mathrm{rank}(L)$ are
 provided. These results can be displayed with the
 [`Contrast$print()`](../reference/Contrast.html#method-print) method.
 
+We now consider the validity of the likelihood ratio tests that each $h^2_{a,
+q_i} = 0$. Consider testing the null that one component of $\theta_1$ is the
+boundary value zero against the null that it is greater than zero in the above
+scenario.  The asymptotic representation of the likelihood ratio statistic
+$T_{LR}$ may be written as [@self1987; @vandervaart2007]:
+
+\begin{equation}
+\begin{split}
+&
+  \underset{
+    \left(\lambda_1, \lambda_2\right) \in \Lambda_{1, H_0} \times \Lambda_2
+  }{\inf} &
+  \left[
+    \left(\mathbf{z}_1 - \lambda_1\right)^{'}
+    \bar{I}\left(\theta_{10}\right) \left(\mathbf{z}_1 - \lambda_1\right) +
+    \left(\mathbf{z}_2 - \lambda_2\right)^{'}
+    \bar{I}\left(\theta_{20}\right) \left(\mathbf{z}_2 - \lambda_2\right)
+  \right] \\
+& &-
+  \underset{
+    \left(\lambda_1, \lambda_2\right) \in \Lambda_{1} \times \Lambda_2
+  }{\inf}
+  \left[
+    \left(\mathbf{z}_1 - \lambda_1\right)^{'}
+    \bar{I}\left(\theta_{10}\right) \left(\mathbf{z}_1 - \lambda_1\right) +
+    \left(\mathbf{z}_2 - \lambda_2\right)^{'}
+    \bar{I}\left(\theta_{20}\right) \left(\mathbf{z}_2 - \lambda_2\right)
+  \right] \\
+& &=
+  \underset{\lambda_1 \in \Lambda_{1, H_0}}{\inf}
+  \left[
+    \left(\mathbf{z}_1 - \lambda_1\right)^{'}
+    \bar{I}\left(\theta_{10}\right) \left(\mathbf{z}_1 - \lambda_1\right)
+  \right] -
+  \underset{\lambda_1 \in \Lambda_1}{\inf}
+  \left[
+    \left(\mathbf{z}_1 - \lambda_1\right)^{'}
+    \bar{I}\left(\theta_{10}\right) \left(\mathbf{z}_1 - \lambda_1\right)
+  \right]
+\end{split}
+\end{equation}
+
+The second equality follows from the facts that the infimum of the sum set is
+the sum of the infima of the constituent sets and the infimum over $\Lambda_2$
+is the same under both the null and alternative hypotheses. Thus, we only need
+to consider the the parameters in $\theta_1$ to obtain the asymptotic
+distribution of the likelihood ratio statistic. As long as no parameters in
+$\theta_{10}$ _other than the single parameter of interest_ have true values
+lying on the boundary $\Theta_1$ under the null or alternative, the same
+argument as for case 5 in Self and Liang [-@self1987] shows that the likelihood
+ratio statistic will have an asymptotic distribution that is a 50:50 mixture of
+$\chi^2_0$ and $\chi^2_1$. Notably, this will not be the correct asymptotic null
+distribution if other parameters in $\theta_{01}$ aside from the one of interest
+take values on the boundary of $\Theta_1$ [@self1987, case 8]. Thus, the
+likelihood ratio test for the null hypothesis $h^2_{a, q_i} = 0$ is valid as
+long as all parameters that are not orthogonal to $h^2_{a, q_i}$ have true
+values in the interior of the parameter space.
+
 Likelihood ratio tests that each $h^2_{a, q_i} = 0$ are performed automatically
 on the first call to the
 [`FamLMMFit$print()`](../reference/FamLMMFit.html#method-print), which calls the
@@ -199,13 +385,35 @@ on the first call to the
 method. The latter method can also be called directly to obtain printed output
 and/or a `data.table` for further manipulation. The same Hessian and convergence
 diagnostics described above are supplied for each constrained maximization under
-the null. As these null hypotheses are on the boundary of the parameter space,
-the mixture distribution $\frac{1}{2}\chi^2_0 + \frac{1}{2}\chi^2_1$ is used for
-the p-value [@self1987]. After the first call to
+the null. The p-value for the likelihood ratio statistic is calculated from the
+appropriate mixture as $\frac{1}{2}1[T_{LR} = 0] +
+\frac{1}{2}\mathrm{Pr}\left(\chi^2_1 \geq T_{LR}\right)$. After the first call
+to
 [`FamLMMFit$get_h2_a_lrts()`](../reference/FamLMMFit.html#method-get_h2_a_lrts),
 the likelihood ratio test results are cached in the
 [`FamLMMFit`](../reference/FamLMMFit.html) object to avoid redundant
 evaluations.
+
+Whether the assumptions required for valid Wald and likelihood ratio inference
+are tenable depends to a large degree on model parameterization. For example, if
+there are 2 populations and there are mean model parameters in common between
+them, it is likely that all parameter estimates are correlated to some
+degree. In such situations, one must assume that the true values of $h^2_{a,
+q_i}$ are non-zero for _all_ populations for asymptotically valid Wald inference
+and for the populations other than the $q_i$ for which $h^2_{a, q_i} = 0$ is
+being testsed for an asymptotically valid likelihood ratio test. However, if all
+model parameters are population-specific, then the likelihood is separable into
+components for families from each population involving only parameters specific
+to that population, and the population-specific parameters are orthogonal. In
+this case, asymptotically valid Wald inference for each population depends only
+on assuming that the true value of $h^2_{a, q_i}$ is non-zero _for that
+population_, and the likelihood ratio p-value presented is always asymptotically
+valid.
+
+It is important to note that the above discussion applies to the true values of
+the parameters, not their estimates. In fact, there is a non-zero probability
+that $\hat{h}^2_{a, q_i} = 0$ for true $h^2_{a, q_i} > 0$ and $\hat{h}^2_{a,
+q_i} > 0$ for true $h^2_{a, q_i} = 0$ in finite samples.
 
 ## Residuals and Diagnostics
 
@@ -215,7 +423,14 @@ using the
 [`FamLMMFit$get_model_res()`](../reference/FamLMMFit.html#method-get_model_res)
 method.
 
-We define the following residuals for non-proband members of family $i$:
+Regarding $\{y_{i j_i}, \mathbf{X}_i, q_i, \Phi_i\}$ as fixed, each of the
+residuals and diagnostics described below can be defined by a family-specific,
+continuous, vector-valued function of $\mathbf{y}_{\mathrm{np}, i}$ and the
+parameter vector $\theta$. This function is denoted generically for any of these
+quantities by $h_{i}(\mathbf{y}_{\mathrm{np}, i}, \theta)$ when convenient to do
+so; otherwise, the functional dependence on $\theta$ will be suppressed in the
+notation for a particular residual or diagnostic for simplicity. Define the
+following residuals for non-proband members of family $i$:
 
 \begin{equation}
 \begin{split}
@@ -228,31 +443,31 @@ We define the following residuals for non-proband members of family $i$:
 where $\mathbf{S}_i = \left[\sqrt{\Omega_{ikk}}\right]_{k = 1}^{m_i - 1}$ and
 $\mathbf{L}_i$ is the lower Cholesky factor of $\Omega_i$ such that
 $\mathbf{L}_i \mathbf{L}_i^{'} = \Omega_i$ [@harville1997]. If the assumed model
-is correctly specified, we obtain with known $\theta$ that:
+is correctly specified, we obtain that at $\theta = \theta_0$:
 
 \begin{equation}
 \begin{split}
-\mathbf{r}_i \mid y_{i j_i}, \mathbf{X}_i, q_i; \theta &\sim
+\mathbf{r}_i \mid y_{i j_i}, \mathbf{X}_i, q_i, \Phi_i; \theta_0 &\sim
   MVN\left( \mathbf{0}, \Omega_i\right) \\
-\mathbf{r}_{\mathrm{s}, i} \mid y_{i j_i}, \mathbf{X}_i, q_i; \theta &\sim
-  MVN\left( \mathbf{0}, \Psi_i\right) \\
-\mathbf{r}_{\mathrm{c}, i} \mid y_{i j_i}, \mathbf{X}_i, q_i; \theta &\sim
-  MVN\left( \mathbf{0}, \mathbf{I} \right)
+\mathbf{r}_{\mathrm{s}, i} \mid y_{i j_i}, \mathbf{X}_i, q_i, \Phi_i; \theta_0
+  &\sim MVN\left( \mathbf{0}, \Psi_i\right) \\
+\mathbf{r}_{\mathrm{c}, i} \mid y_{i j_i}, \mathbf{X}_i, q_i, \Phi_i; \theta_0
+  &\sim MVN\left( \mathbf{0}, \mathbf{I} \right)
 \end{split}
 \end{equation}
 
 and $\Psi_i$ is a correlation matrix. $\mathbf{r}_{\mathrm{s}, i}$ is the vector
 of Pearson-type residuals. Each element $r_{\mathrm{s}, ik}$ of
-$\mathbf{r}_{\mathrm{s}, i}$ is marginally standard normal if the model is
-correctly specified and $\theta$ is known, although its elements are not
+$\mathbf{r}_{\mathrm{s}, i}$ is marginally standard normal at $\theta =
+\theta_0$ if the model is correctly specified, although its elements are not
 independent for members of the same family. $\mathbf{r}_{\mathrm{c}, i}$ is the
 vector of Cholesky residuals with elements $r_{\mathrm{c}, ik}$, which are
-independent standard normal random variables if the model is correctly specified
-and $\theta$ is known. Note that all types of residual vectors are independent
-across families with $\theta$ known.
+independent standard normal random variables at $\theta = \theta_0$ if the model
+is correctly specified. Note that all types of residual vectors are independent
+across families at $\theta = \theta_0$.
 
 A family-level goodness-of-fit statistic [@hopper1982; @beaty1987] can be
-defined from the Cholesky residual vector.  The sum of the squares of these
+defined from the Cholesky residual vector. The sum of the squares of these
 residuals for family $i$ is given by the inner product:
 
 \begin{equation}
@@ -266,19 +481,19 @@ c_i^{*} = \mathbf{r}_{\mathrm{c}, i}^{'} \mathbf{r}_{\mathrm{c}, i}
 \end{equation}
 
 Because the Cholesky residuals are independent standard normal both within and
-between families when the model is correct and $\theta$ is known, the $c_i^{*}$
+between families at $\theta = \theta_0$ when the model is correct, the $c_i^{*}$
 are independent $\chi^2_{m_i-1}$, and the $p_{c_i^{*}} =
 \mathrm{Pr}\left(c_i^{*} \geq \chi^2_{m_i-1}\right)$ are independent standard
-uniform across families.
+uniform across families at $\theta = \theta_0$.
 
 Hopper and Mathews [-@hopper1982] suggested another type of goodness-of-fit
 statistic to identify individuals who are outliers relative to their pedigree
-that we adapt to our situation. With known parameter values and a correctly
-specified model, the preceding development shows:
+that we adapt to our situation. With a correctly specified model, the preceding
+development shows that at $\theta = \theta_0$:
 
 \begin{gather}
-r_{ik} \mid \mathbf{r}_{i(-k)}, y_{i j_i}, \mathbf{X}_i, q_i; \theta \sim
-  N\left(
+r_{ik} \mid \mathbf{r}_{i(-k)}, y_{i j_i}, \mathbf{X}_i, q_i, \Phi_i; \theta_0
+  \sim N\left(
     \Omega_{i k (-k)} \Omega_{i (-k) (-k)}^{-1} \mathbf{r}_{i(-k)},
     \Omega^{*}_{ikk}
   \right) \\
@@ -287,10 +502,10 @@ r_{ik} \mid \mathbf{r}_{i(-k)}, y_{i j_i}, \mathbf{X}_i, q_i; \theta \sim
 \end{gather}
 
 As a result, we define $r^{*}_{ik} = \left( r_{ik} - \Omega_{i k (-k)} \Omega_{i
-(-k) (-k)}^{-1} \mathbf{r}_{i(-k)} \right) / \sqrt{\Omega^{*}_{ikk}}$, which
-are marginally standard normal and independent in individuals from different
-families, although not in individuals from the same family, if the model is
-correct and $\theta$ is known [@hopper1982].
+(-k) (-k)}^{-1} \mathbf{r}_{i(-k)} \right) / \sqrt{\Omega^{*}_{ikk}}$, which are
+marginally standard normal and independent in individuals from different
+families, although not in individuals from the same family, at $\theta =
+\theta_0$ if the model is correct [@hopper1982].
 
 To take advantage of sparse matrix computations from the `Matrix` package for
 efficiency, we calculate residuals and related diagnostics by working with
@@ -421,53 +636,164 @@ indexes in the same order as $\mathbf{r}$ as:
 which involves a single inversion of a sparse block diagonal matrix and a single
 solution of a sparse linear system.
 
-In practice, unknown parameters in $\theta$ are replaced by their maximum
-likelihood estimates, $\hat{\theta}$. We denote estimated residuals where this
-has occurred by a superscript "hat" going forward. Consider the estimated
-residuals and diagnostics for an arbitrary family $i$. Because $\hat{\theta}
-\overset{p}{\longrightarrow} \theta$ by the properties of maximum likelihood
-estimates, we have from the Continuous Mapping Theorem [@vandervaart2007] that
-$\hat{\mathbf{r}}_i - \mathbf{r}_i = \eta_i - \hat{\eta}_i
-\overset{p}{\longrightarrow} \mathbf{0}$. Further applications of the Continuous
-Mapping Theorem imply that $\hat{\mathbf{r}}_{\mathrm{s}, i}
-\overset{p}{\longrightarrow} \mathbf{r}_{\mathrm{s}, i}$,
-$\hat{\mathbf{r}}_{\mathrm{c}, i} \overset{p}{\longrightarrow}
-\mathbf{r}_{\mathrm{c}, i}$, $\hat{c}^{*}_i \overset{p}{\longrightarrow}
-c^{*}_i$, $\hat{p}_{\hat{c}^{*}_i} \overset{p}{\longrightarrow} p_{c^{*}_i}$,
-and $\hat{\mathbf{r}}^{*}_i \overset{p}{\longrightarrow}
-\mathbf{r}^{*}_i$. Convergence in probability for each family's component
-implies joint convergence in probability of the vector of stacked components
-[@vandervaart2007, Theorem 2.7(vi)], so we can conclude that $\hat{\mathbf{r}}
-\overset{p}{\longrightarrow} \mathbf{r}$, $\hat{\mathbf{r}}_{\mathrm{s}}
-\overset{p}{\longrightarrow} \mathbf{r}_{\mathrm{s}}$,
-$\hat{\mathbf{r}}_{\mathrm{c}} \overset{p}{\longrightarrow}
-\mathbf{r}_{\mathrm{c}}$, $\hat{\mathbf{c}}^{*} = \left[\hat{c}^{*}_1, ...,
-\hat{c}^{*}_N\right]^{'} \overset{p}{\longrightarrow} \left[c^{*}_1, ...,
-c^{*}_N\right]^{'} = \mathbf{c}^{*}$, $\hat{\mathbf{p}}_{\hat{\mathbf{c}}^{*}} =
-\left[\hat{p}_{\hat{c}^{*}_1}, ..., \hat{p}_{\hat{c}^{*}_N}\right]^{'}
-\overset{p}{\longrightarrow} \left[p_{c^{*}_1}, ..., p_{c^{*}_N}\right]^{'} =
-\mathbf{p}_{\mathbf{c}^{*}}$, and $\hat{\mathbf{r}}^{*}
-\overset{p}{\longrightarrow} \mathbf{r}^{*}$ As a result, the estimated
-quantities will have sampling distributions that can be approximated by those
-of the true quantities in sufficiently large samples.
+In practice, the unknown $\theta_0$ is estimated using the same data by maximum
+likelihood and estimates $h_{i}(\mathbf{y}_{\mathrm{np}, i}, \hat{\theta})$ of
+$h_{i}(\mathbf{y}_{\mathrm{np}, i}, \theta_0)$ are used. These estimates are
+designated by a superscript "hat" in the documentation--that is
+$\hat{\mathbf{r}}_{c,i}$ is $\mathbf{r}_{c,i}$ evaluated at $\theta =
+\hat{\theta}$. We now consider the distributional properties of a generic
+$h_{i}(\mathbf{y}_{\mathrm{np}, i}, \hat{\theta})$. Because $\hat{\theta}
+\overset{p}{\longrightarrow} \theta_0$ as $N \rightarrow \infty$ even if
+$\theta_0$ is on the boundary of the parameter space (see [Inference]) and
+$\mathbf{y}_{\mathrm{np}, i} \overset{p}{\longrightarrow}
+\mathbf{y}_{\mathrm{np}, i}$ trivially, they converge in probability jointly
+[@vandervaart2007, Theorem 2.7(vi)]. We can then apply the Continuous Mapping
+Theorem [@vandervaart2007] to conclude that $h_{i}(\mathbf{y}_{\mathrm{np}, i},
+\hat{\theta}) \overset{p}{\longrightarrow} h_{i}(\mathbf{y}_{\mathrm{np}, i},
+\theta_0)$ for all $i$. It immediately follows that
+$\left(h_{i}(\mathbf{y}_{\mathrm{np}, i}, \hat{\theta}),
+h_{i^{'}}(\mathbf{y}_{\mathrm{np}, i^{'}}, \hat{\theta})\right)
+\overset{p}{\longrightarrow} \left(h_{i}(\mathbf{y}_{\mathrm{np}, i}, \theta_0),
+h_{i^{'}}(\mathbf{y}_{\mathrm{np}, i^{'}}, \theta_0)\right)$ for all $i$ and
+$i^{'} \neq i$. Note that the distribution of $\mathbf{y}_{\mathrm{np}, i}$ is
+always (\\ref{eq:conddist}) with $\theta = \theta_0$ in the preceding results
+and all subsequent development.
 
-For true quantities where the multivariate distribution comprises independent
-and identically distributed components, goodness of fit can be assessed visually
-using a quantile-quantile (QQ) plot of the estimated components against the
-corresponding quantiles of the theoretical distribution. For example, ordered
-Cholesky residuals can be plotted against the corresponding expected order
-statistics for a sample of the same size from the standard normal
-distribution. It is important to note, however, that neither standard confidence
-limits for quantile-quantile plots nor standard goodness-of-fit statistics
-correctly reflect the sampling variability of the empirical distribution
-function (EDF) of these estimated quantities. For example, Houseman et
-al. [-@houseman2004] established that the scaled difference between the
-empirical distribution function of the estimated Cholesky residuals and the
-standard normal cumulative distribution function (CDF) converges pointwise to a
-mean-zero normal random variable with variance differing from the standard
-$\Phi\left(t\right)\left(1 - \Phi\left(t\right)\right)$. Thus, while the
-convergence in probability of the EDF to the CDF still holds and allows for
-comparison with the identity line on the QQ plot, unmodified confidence limits
-or goodness-of-fit tests may yield misleading inferences.
+Let $k \in \{1, ..., K_i\}$ index the components of $h_{i}$ in a given
+family. Note that, for diagnostics such as $\hat{p}_{\hat{c}^{*}_i}$, $K_i
+\equiv 1$ for all $i$, but $K_i = m_i - 1$ for residuals. Now denote the
+marginal cumulative distribution function (CDF) of
+$h_{ik}(\mathbf{y}_{\mathrm{np}, i}, \hat{\theta})$ in a sample of $N$ families
+by $F_{ik, N}(t)$ and the marginal CDF of $h_{ik}(\mathbf{y}_{\mathrm{np}, i},
+\theta_0)$ by $F_{ik}(t)$. When each $h_{ik}(\mathbf{y}_{\mathrm{np}, i},
+\theta_0)$ has the same continuous marginal distribution $F_{ik}(t) \equiv
+F(t)$, it follows from the convergence in probability results given above that
+$\underset{t}{\sup} \left| F_{ik, N}(t) - F(t) \right| \rightarrow 0$ as $N
+\rightarrow \infty$ for all $ik$.  Considering
+$\left(h_{ik}(\mathbf{y}_{\mathrm{np}, i}, \hat{\theta}), h_{i^{'}
+k^{'}}(\mathbf{y}_{\mathrm{np}, i^{'}}, \hat{\theta}) \right)$ for any $ik$ and
+$i^{'} k^{'} \neq ik$, their joint convergence in probability to
+$\left(h_{ik}(\mathbf{y}_{\mathrm{np}, i}, \theta_0), h_{i^{'}
+k^{'}}(\mathbf{y}_{\mathrm{np}, i^{'}}, \theta_0) \right)$ follows immediately
+from the first convergence in probability result above when $i^{'} = i$ and the
+second otherwise. Denoting the joint CDF of
+$\left(h_{ik}(\mathbf{y}_{\mathrm{np}, i}, \hat{\theta}), h_{i^{'}
+k^{'}}(\mathbf{y}_{\mathrm{np}, i^{'}}, \hat{\theta}) \right)$ in a sample of
+$N$ families by $F_{ik, i^{'} k^{'}, N}(s, t)$ and the joint CDF of
+$\left(h_{ik}(\mathbf{y}_{\mathrm{np}, i}, \theta_0), h_{i^{'}
+k^{'}}(\mathbf{y}_{\mathrm{np}, i^{'}}, \theta_0) \right)$ by $F_{ik, i^{'}
+k^{'}}(s, t)$, it follows that $\underset{s, t}{\sup} \left| F_{ik, i^{'} k^{'},
+N}(s, t) - F_{ik, i^{'} k^{'}}(s, t) \right| \rightarrow 0$ as $N \rightarrow
+\infty$ for all $ik$ and $i^{'} k^{'} \neq ik$.
+
+Define the empirical distribution function (EDF) of
+$h_{ik}(\mathbf{y}_{\mathrm{np}, i}, \hat{\theta})$ in the sample as
+$\hat{F}_{N}(t) = m^{-1} \sum_{i = 1}^N \sum_{k=1}^{K_i}
+I\left[h_{ik}(\mathbf{y}_{\mathrm{np}, i}, \hat{\theta}) \leq t\right]$, where
+$m = \sum_{i=1}^N K_i$. Based on the convergence in distribution shown above,
+for any $\varepsilon > 0$, we can choose an $N_{\varepsilon}$ such that
+$\underset{ik, t}{\sup} \left| F_{ik, N}(t) - F(t) \right| < \varepsilon$ and
+$\underset{ik, i^{'} k^{'} \neq ik, s, t}{\sup} \left| F_{ik, i^{'} k^{'}, N}(s,
+t) - F_{ik, i^{'} k^{'}}(s, t) \right| < \varepsilon$ whenever $N \geq
+N_{\varepsilon}$. For an arbitrary $N \geq N_{\varepsilon}$ and $t$, we have:
+
+\begin{equation}
+\begin{split}
+\left| \mathrm{E}\left[\hat{F}_{N}(t)\right] - F(t) \right|
+&= \left|  m^{-1} \sum_{i = 1}^N \sum_{k=1}^{K_i}
+  \left(F_{ik, N}(t) - F(t)\right) \right| \\
+&\leq m^{-1} \sum_{i = 1}^N \sum_{k=1}^{K_i}
+  \left| F_{ik, N}(t) - F(t) \right| \\
+&< \varepsilon
+\end{split}
+\end{equation}
+
+which implies that $\mathrm{E}\left[\hat{F}_{N}(t)\right] \rightarrow F(t)$ as
+$N \rightarrow \infty$.  We also have that:
+
+\begin{equation}
+\begin{split}
+&\left| \mathrm{Var}\left(\hat{F}_{N}(t)\right) -
+  m^{-1} \left(F(t) - F(t)^2 \right) -
+  m^{-2} \sum_{ik} \sum_{i^{'} k^{'} \neq ik}
+  \left(F_{ik, i^{'} k^{'}}(t, t) - F(t)^2 \right)
+\right| \\
+&\phantom{0000} \leq \left|
+  m^{-2} \sum_{ik} \left(F_{ik,N}(t) - F(t) + F(t)^2 - F_{ik, N}(t)^2\right)
+\right| \\
+&\phantom{000000} + \left|
+  m^{-2} \sum_{ik} \sum_{i^{'} k^{'} \neq ik}
+  \left(F_{ik, i^{'} k^{'}, N}(t, t) - F_{ik, i^{'} k^{'}}(t, t) +
+  F(t)^2 - F_{ik, N}(t)F_{i^{'} k^{'}, N}(t)\right)
+\right| \\
+&\phantom{0000} \leq m^{-2} \sum_{ik} \left| F_{ik, N}(t) - F(t) \right| +
+  m^{-2} \sum_{ik} \left| F(t)^2 - F_{ik, N}(t)^2 \right| \\
+&\phantom{000000} + m^{-2} \sum_{ik} \sum_{i^{'} k^{'} \neq ik}
+  \left|F_{ik, i^{'} k^{'}, N}(t, t) - F_{ik, i^{'} k^{'}}(t, t)\right| +
+  m^{-2} \sum_{ik} \sum_{i^{'} k^{'}
+  \neq ik} \left|F(t)^2 - F_{ik, N}(t)F_{i^{'} k^{'}, N}(t)\right| \\
+&\phantom{0000} < m^{-1} \varepsilon +
+  m^{-2} \sum_{ik} \left| F(t) - F_{ik, N}(t) \right|\left| F(t) +
+  F_{ik, N}(t) \right| \\
+&\phantom{000000} +  \left(1 - m^{-1}\right) \varepsilon +
+  m^{-2} \sum_{ik} \sum_{i^{'} k^{'} \neq ik}
+  \left|F(t)\right|\left|F(t) - F_{ik, N}(t)\right| +
+  m^{-2} \sum_{ik} \sum_{i^{'} k^{'} \neq ik}
+  \left|F_{ik, N}(t)\right|\left|F(t) - F_{i^{'} k^{'}, N}(t)\right| \\
+&\phantom{0000} < \varepsilon + 2 m^{-1} \varepsilon +
+  \left(1 - m^{-1}\right) \varepsilon + \left(1 - m^{-1}\right) \varepsilon
+  = 3 \varepsilon
+\end{split}
+\end{equation}
+
+For quantities that are pairwise independent with identical marginal
+distributions at $\theta = \theta_0$, such as $r_{c,ik}$ and $p_{c^{*}_i}$,
+$F_{ik, i^{'} k^{'}}(t, t) = F(t)^2$, $\sum_{ik} \sum_{i^{'} k^{'} \neq ik}
+\left(F_{ik, i^{'} k^{'}}(t, t) - F(t)^2 \right) \equiv 0$, and it follows from
+the above results that $\mathrm{Var}\left(\hat{F}_{N}(t)\right) \rightarrow 0$
+as $N \rightarrow \infty$. In the case of $r^{*}_{ik}$, the pairs are dependent
+at $\theta = \theta_0$ for individuals in the same family but indpendent for
+unrelated individuals. Note that all non-zero terms in $\sum_{ik} \sum_{i^{'}
+k^{'} \neq ik} \left(F_{ik, i^{'} k^{'}}(t, t) - F(t)^2 \right)$ are in
+$\left[-1, 1\right]$, so $m^{-2}$ times this quantity is bounded by $[-m^{-2}
+m_{+}, m^{-2} m_{+}]$, where $m_{+}$ is the number of non-zero terms.  The block
+diagonal covariance structure of $\mathbf{r}^{*}$ implies that $m_{+} =
+\sum_{i=1}^{N} K_i^2 - m$. Because $m \geq N$, if family sizes are bounded by a
+constant $K$, then $m^{-2} m_{+} \leq N^{-1} (K^2 - 1) \rightarrow 0$ as $N
+\rightarrow \infty$. As a result, $\mathrm{Var}\left(\hat{F}_{N}(t)\right)
+\rightarrow 0$ as $N \rightarrow \infty$ in this case as well. It then follows
+from Chebyshev's Inequality that $\hat{F}_{N}(t) \overset{p}{\longrightarrow}
+F(t)$ at each $t$ [@greene2003].
+
+The consistency of the EDF in these cases also implies the consistency of the
+quantile function [@vandervaart2007]. As a result, goodness of fit can be
+assessed visually using plots of the EDF or a quantile-quantile (QQ) plot of the
+estimated quantities against the corresponding quantiles of the theoretical
+marginal distribution. For example, Cholesky residuals can be plotted against
+the corresponding theoretical quantiles for a sample of the same size from the
+standard normal distribution. While the results above demonstrate consistency,
+they provide no insights into sampling variability. In fact, neither standard
+confidence limits for QQ plots nor standard goodness-of-fit statistics correctly
+reflect the sampling variability of the EDF of these estimated quantities
+because they do not account for estimation of parameters from the same data. In
+the case of Cholesky residuals, Houseman, Ryan, and Coull [-@houseman2004]
+established that the scaled difference between the empirical distribution
+function of the estimated Cholesky residuals and the standard normal CDF
+converges pointwise to a mean-zero normal random variable with variance
+differing from the standard $\Phi\left(t\right)\left(1 -
+\Phi\left(t\right)\right)$. The authors note that this is a consequence of
+shrinkage due to the use of estimated parameter, which also squares with the
+observation of Beaty, Liang, and Rao [-@beaty1987] that the sum of the estimated
+family chi-square statistics, which is the sum of the squared estimated Cholesky
+residuals, must equal the number of non-probands, $m$. With known $\theta =
+\theta_0$, values, this sum would be a $\chi^2_m$ random variable with mean $m$
+and variance $2m$, but shrinkage due to use of $\theta = \hat{\theta}$ reduces
+the variance of the sum to zero.  In summary, while the pointwise convergence in
+probability of the EDF to the CDF still holds for estimated residuals and
+diagnostics and allows for comparison with the identity line on the QQ plot,
+unmodified confidence limits or goodness-of-fit tests based on the EDF may yield
+misleading inferences. For Cholesky residuals, the method of Houseman and
+colleagues can be used to estimate the correct pointwise sampling variance for
+the EDF.
 
 ## References

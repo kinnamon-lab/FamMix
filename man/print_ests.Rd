@@ -4,7 +4,7 @@
 \alias{print_ests}
 \title{Print parameter estimates}
 \usage{
-print_ests(theta_hat, V_theta_hat, trans, ...)
+print_ests(theta_hat, V_theta_hat, trans, title = "Parameter Estimates", ...)
 }
 \arguments{
 \item{theta_hat}{A named vector of parameter estimates.}
@@ -15,6 +15,9 @@ print_ests(theta_hat, V_theta_hat, trans, ...)
 \item{trans}{A function accepting a single argument (e.g., \code{exp}) that is
 used to transform parameter estimates and confidence intervals. All tests
 and standard errors are still on the untransformed scale.}
+
+\item{title}{A string header to print before the estimates or \code{NULL} to
+not print any header. Defaults to "Parameter Estimates".}
 
 \item{...}{
   Arguments passed on to \code{\link[=make_coef_mat]{make_coef_mat}}, \code{\link[stats:printCoefmat]{stats::printCoefmat}}

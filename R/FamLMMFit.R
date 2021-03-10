@@ -244,10 +244,10 @@ FamLMMFit <- R6Class(
           times = lmm_data[["f_sizes"]]
         )
       )
-      sigma_a <- sqrt(h2_a * sigma2)
-      sigma_mat <- 2 * sigma_a %*%
-        as(as(lmm_data[["phi"]], "symmetricMatrix"), "dsCMatrix") %*%
-        sigma_a + sigma2 - sigma_a ^ 2
+      sigma_mat <- as(
+        2 * (sigma2 * h2_a) %*% lmm_data[["phi"]] + sigma2 - sigma2 * h2_a,
+        "symmetricMatrix"
+      )
 
       # All-subject diagnostics
       y <- lmm_data[["y"]]
@@ -264,22 +264,22 @@ FamLMMFit <- R6Class(
       }
 
       # Family-member-only diagnostics
-      sigma_mat_pr <- sigma_mat[pr_mf_idxs, pr_mf_idxs]
-      sigma_mat_pr_cols <- sigma_mat[non_pr_mf_idxs, pr_mf_idxs]
+      sigma_mat_pr_pr <- sigma_mat[pr_mf_idxs, pr_mf_idxs]
+      sigma_mat_non_pr_pr <- sigma_mat[non_pr_mf_idxs, pr_mf_idxs]
       eta_hat <- as.numeric(
         mu_hat[non_pr_mf_idxs] +
-          sigma_mat_pr_cols %*%
+          sigma_mat_non_pr_pr %*%
           Matrix::solve(
-            sigma_mat_pr,
+            sigma_mat_pr_pr,
             y[pr_mf_idxs] - mu_hat[pr_mf_idxs]
           )
       )
       omega_mat <- as(
         sigma_mat[non_pr_mf_idxs, non_pr_mf_idxs] -
-          sigma_mat_pr_cols %*%
+          sigma_mat_non_pr_pr %*%
           Matrix::solve(
-            sigma_mat_pr,
-            Matrix::t(sigma_mat_pr_cols)
+            sigma_mat_pr_pr,
+            Matrix::t(sigma_mat_non_pr_pr)
           ),
         "symmetricMatrix"
       )
@@ -319,7 +319,7 @@ FamLMMFit <- R6Class(
       if (!isTRUE(all.equal(
         dx_non_pr[, sum(r_c_hat ^ 2)],
         nrow(dx_non_pr),
-        tolerance = 1e-5
+        tolerance = 1e-4
       ))) {
         stop("Squared Cholesky residuals do not sum to total sample size")
       }
@@ -462,9 +462,10 @@ FamLMMFit <- R6Class(
           names(parameters[["h2_a"]])
         }
         parameters[["h2_a"]] <- rep(0, length(h2_a_parms))
+        names(parameters[["h2_a"]]) <- h2_a_parms
         res <- rbindlist(lapply(h2_a_parms, function(x) {
           map_list <- list(
-            h2_a = factor(seq(1, length(h2_a_parms)))
+            h2_a = seq(1, length(h2_a_parms))
           )
           names(map_list[["h2_a"]]) <- h2_a_parms
           map_list[["h2_a"]][x] <- NA
@@ -492,13 +493,38 @@ FamLMMFit <- R6Class(
           scaled_grad <- as.numeric(
             theta_gr %*% Matrix::solve(neg_hess_ll) %*% t(theta_gr)
           )
-          lr_X2 <- 2 * (-private$optres[["value"]] + optres[["value"]])
-          df_X2 <- 1
-          p_X2 <- ifelse(
-            abs(lr_X2) < sqrt(.Machine[["double.eps"]]),
-            1,
-            0.5 * pchisq(lr_X2, df_X2, lower.tail = FALSE)
-          )
+          if (converge) {
+            cur_par <- if (length(h2_a_parms) == 1) {
+              "h2_a"
+            } else {
+              paste0("h2_a.", x)
+            }
+            # Account for numerical imprecision in loglikelihood optimization
+            # causing non-zero lr_X2 when estimated h2_a is exactly 0 and lr_X2
+            # should be as well
+            if (
+              isTRUE(all.equal(optres[["value"]], private$optres[["value"]])) &&
+                private$theta_hat[cur_par] == 0
+            ) {
+              lr_X2 <- 0
+            } else {
+              lr_X2 <- 2 * (optres[["value"]] - private$optres[["value"]])
+            }
+            if (lr_X2 < 0) {
+              warning(
+                "A negative LR statistic (", lr_X2, ") was obtained for ",
+                "an estmiated h2_a = ", private$theta_hat[cur_par], " and ",
+                "set to zero"
+              )
+              lr_X <- 0
+            }
+            p_X2 <- sum(0.5 * pchisq(lr_X2, c(0, 1), lower.tail = FALSE))
+          } else {
+            # In cases where the optimization failed to converge, set LRT X2 and
+            # p-value to missing
+            lr_X2 <- NA
+            p_X2 <- NA
+          }
 
           data.table(
             h_0 = if (length(h2_a_parms) == 1) {
@@ -512,21 +538,11 @@ FamLMMFit <- R6Class(
             min_ev_neg_hess_ll,
             rcond_neg_hess_ll,
             lr_X2,
-            df_X2,
             p_X2
           )
         }))
 
-        # In cases where the optimization failed to converge, set results to
-        # missing
-        res[
-          converge != TRUE,
-          `:=`(
-            lr_X2 = NA,
-            df_X2 = NA,
-            p_X2 = NA
-          )
-        ]
+        private$h2_a_lrts <- res
       } else {
         res <- private$h2_a_lrts
       }
@@ -544,16 +560,10 @@ FamLMMFit <- R6Class(
               `Min lambda(-H)` = format(min_ev_neg_hess_ll, scientific = TRUE),
               `1 / kappa(-H)` = format(rcond_neg_hess_ll, scientific = TRUE),
               `LR X^2` = format(lr_X2, digits = 5),
-              DF = df_X2,
               `Pr(> X^2)` = format.pval(p_X2)
             )
           ],
           row.names = FALSE
-        )
-        cat(
-          "\nNOTE: P-values are calculated from a 50:50 mixture of ",
-          "chi-square(0)\n      and chi-square(1) per Self and Liang (1987)\n",
-          sep = ""
         )
       }
 

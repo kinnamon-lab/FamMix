@@ -126,9 +126,12 @@ Contrast <- R6Class(
         ),
         quote = FALSE
       )
-      print_ests(private$L_theta_hat_m, private$V_L_theta_hat, ...)
-      cat("\nWald Chi-square Test of Ho: L_mat %*% theta_hat = m\n")
-      cat("---------------------------------------------------\n")
+      print_ests(
+        private$L_theta_hat_m, private$V_L_theta_hat,
+        title = "L_mat %*% theta_hat - m", ...
+      )
+      cat("\nWald Chi-square Test of Ho: L_mat %*% theta_hat - m = 0\n")
+      cat("-------------------------------------------------------\n")
       cat(
         "X2 = ", private$X2, ", df = ", private$df_X2,
         ", P(> X2) = ", format.pval(private$p_X2), "\n", sep = ""

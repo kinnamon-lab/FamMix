@@ -33,8 +33,13 @@ LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.1
 Suggests:
-    testthat (>= 3.0.1),
     knitr,
-    rmarkdown
+    rmarkdown,
+    devtools (>= 2.3.2),
+    future.apply (>= 1.7.0),
+    ggplot2 (>= 3.3.2),
+    testthat (>= 3.0.1),
+    vdiffr (>= 0.3.3),
+    withr (>= 2.4.1)
 Config/testthat/edition: 3
 VignetteBuilder: knitr

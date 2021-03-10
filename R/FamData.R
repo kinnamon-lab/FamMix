@@ -70,8 +70,8 @@ FamData <- R6Class(
     #'   individuals who are not dizygotic twins.
     #' @param phi A matrix coercible to a [`Matrix::dsCMatrix-class`] containing
     #'   the pairwise kinship coefficients for individuals. Note that
-    #'   `phi[i, j]` must contain the kinship coefficient between the individuals
-    #'   in `data[i, ]` and `data[j, ]`.
+    #'   `phi[i, j]` must contain the kinship coefficient between the
+    #'   individuals in `data[i, ]` and `data[j, ]`.
     initialize = function(data, ...) {
       private$data_name <- deparse(substitute(data))
       args <- list(...)
@@ -102,7 +102,11 @@ FamData <- R6Class(
         )
         # Populate data member, rename to standard variable names for use
         # within FamData object, and sort by fmid, then id
-        private$data <- data.table(data)
+        private$data <- if (is.data.table(data)) {
+          copy(data)
+        } else {
+          data.table(data)
+        }
         setnames(
           private$data,
           old = private$var_map,
@@ -370,9 +374,9 @@ FamData <- R6Class(
     #' @description Returns name of input `data.frame` or [`data.table`].
     get_data_name = function() private$data_name,
 
-    #' @description Returns character vector containing family IDs in which
-    #'   consanguinity was found (based on individual self-kinship coefficient
-    #'   greater than 0.5).
+    #' @description Returns vector containing family IDs in which consanguinity
+    #'   was found (based on individual self-kinship coefficient greater than
+    #'   0.5).
     get_consang = function() private$consang,
 
     #' @description Returns kinship matrix member.
@@ -412,9 +416,7 @@ FamData <- R6Class(
       }
       cat("Pedigree variable mapping:\n")
       cat(
-        sprintf(
-          "  %6-s%s", paste0(names(private$var_map), ":"), private$var_map
-        ),
+        sprintf("  %-6s : %s", names(private$var_map), private$var_map),
         sep = "\n"
       )
       cat(
@@ -473,7 +475,7 @@ FamData <- R6Class(
       mod_data <- private$make_model_mats_lmm(formula)
       init_fits <- lm(
         formula(formula, rhs = 1),
-        data = private$data[mod_data[["incl_ids"]], on = .(fmid, id)]
+        data = private$data[mod_data[["incl_ids"]], on = .(fmid, id)][pr == 0]
       )
       # Make sure name patterns reserved for variance components are not used in
       # mean model

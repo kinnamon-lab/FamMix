@@ -88,8 +88,8 @@ individuals who are not dizygotic twins.}
 
 \item{\code{phi}}{A matrix coercible to a \code{\link[Matrix:dsCMatrix-class]{Matrix::dsCMatrix}} containing
 the pairwise kinship coefficients for individuals. Note that
-\code{phi[i, j]} must contain the kinship coefficient between the individuals
-in \code{data[i, ]} and \code{data[j, ]}.}
+\code{phi[i, j]} must contain the kinship coefficient between the
+individuals in \code{data[i, ]} and \code{data[j, ]}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -128,9 +128,9 @@ Returns name of input \code{data.frame} or \code{\link{data.table}}.
 \if{html}{\out{<a id="method-get_consang"></a>}}
 \if{latex}{\out{\hypertarget{method-get_consang}{}}}
 \subsection{Method \code{get_consang()}}{
-Returns character vector containing family IDs in which
-consanguinity was found (based on individual self-kinship coefficient
-greater than 0.5).
+Returns vector containing family IDs in which consanguinity
+was found (based on individual self-kinship coefficient greater than
+0.5).
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{FamData$get_consang()}\if{html}{\out{</div>}}
 }

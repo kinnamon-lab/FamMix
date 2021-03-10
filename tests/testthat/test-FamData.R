@@ -84,7 +84,76 @@ test_that("Constructor works properly", {
   ))
 })
 
-# Test kinship matrices in a couple of known cases
-#test_that("Kinship matrices are correct", {
-#  expect_snapshot_value(fd_sig1$get_phi())
-#})
+test_that("Twins are handled properly", {
+
+  # Family 1 has 2 DZ and 2 MZ twins; family 2 has MZ triplets; family 3 has
+  # no twins
+  twin_test <- data.table(
+    famid = rep(c(1, 2, 3), times = c(6, 5, 4)),
+    id = as.numeric(c(seq(1, 6), seq(1, 5), seq(1, 4))),
+    pr = c(rep(0, 5), 1, rep(0, 4), 1, rep(0, 3), 1),
+    sex = c(1, 2, 1, 2, rep(1, 2), 1, 2, rep(2, 3), 1, 2, rep(2, 2)),
+    mid = c(0, 0, rep(2, 4), 0, 0, rep(2, 3), 0, 0, rep(2, 2)),
+    fid = c(0, 0, rep(1, 4), 0, 0, rep(1, 3), 0, 0, rep(1, 2)),
+    mzgrp = c(rep(NA, 4), rep("A", 2), NA, NA, rep("A", 3), rep(NA, 4)),
+    dzgrp = c(NA, NA, rep("A", 2), rep(NA, 11))
+  )
+
+  twin_test_fd <- FamData$new(
+    twin_test, family_id = "famid", indiv_id = "id", proband = "pr",
+    sex = "sex", maternal_id = "mid", paternal_id = "fid", mzgrp = "mzgrp",
+    dzgrp = "dzgrp"
+  )
+
+  expect_snapshot_output(
+    Matrix::print(twin_test_fd$get_phi(), col.names = TRUE)
+  )
+
+  # Should also work correctly with numeric or factor twin group identifiers
+  twin_test_fd2 <- FamData$new(
+    copy(twin_test)[,
+      `:=`(
+        mzgrp = as.numeric(mzgrp == "A"),
+        dzgrp = factor(dzgrp)
+      )
+    ],
+    family_id = "famid", indiv_id = "id", proband = "pr", sex = "sex",
+    maternal_id = "mid", paternal_id = "fid", mzgrp = "mzgrp", dzgrp = "dzgrp"
+  )
+
+  expect_equal(twin_test_fd$get_phi(), twin_test_fd2$get_phi())
+
+})
+
+test_that("Consanguinity is detected", {
+
+  # Family 1 is consanguinous; family 2 is not
+  consang_test <- data.table(
+    famid = rep(c(1, 2), each = 6),
+    id = as.numeric(rep(seq(1, 6), times = 2)),
+    pr = rep(c(rep(0, 5), 1), times = 2),
+    sex = rep(c(1, 2), times = 6),
+    mid = c(0, 0, 2, 2, 4, 4, 0, 0, 2, 2, 2, 2),
+    fid = c(0, 0, 1, 1, 3, 3, 0, 0, 1, 1, 1, 1),
+    mzgrp = NA,
+    dzgrp = NA
+  )
+
+  consang_test_fd <- FamData$new(
+    consang_test, family_id = "famid", indiv_id = "id", proband = "pr",
+    sex = "sex", maternal_id = "mid", paternal_id = "fid", mzgrp = "mzgrp",
+    dzgrp = "dzgrp"
+  )
+
+  expect_equal(consang_test_fd$get_consang(), 1)
+
+  # Should get same result with apporpirate type with character family_id column
+  consang_test_fd2 <- FamData$new(
+    consang_test[, famid := as.character(famid)], family_id = "famid",
+    indiv_id = "id", proband = "pr", sex = "sex", maternal_id = "mid",
+    paternal_id = "fid", mzgrp = "mzgrp", dzgrp = "dzgrp"
+  )
+
+  expect_equal(consang_test_fd2$get_consang(), "1")
+
+})

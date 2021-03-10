@@ -113,11 +113,14 @@ make_coef_mat <- function(theta_hat, V_theta_hat, trans, alpha = 0.05,
 #' @param trans A function accepting a single argument (e.g., `exp`) that is
 #'   used to transform parameter estimates and confidence intervals. All tests
 #'   and standard errors are still on the untransformed scale.
+#' @param title A string header to print before the estimates or `NULL` to
+#'   not print any header. Defaults to "Parameter Estimates".
 #' @inheritDotParams make_coef_mat
 #' @inheritDotParams stats::printCoefmat -x -cs.ind -tst.ind
 #'
 #' @export
-print_ests <- function(theta_hat, V_theta_hat, trans, ...) {
+print_ests <- function(theta_hat, V_theta_hat, trans,
+                       title = "Parameter Estimates", ...) {
   make_coef_mat_args <- list(
     quote(theta_hat), quote(V_theta_hat), quote(trans)
   )
@@ -135,8 +138,13 @@ print_ests <- function(theta_hat, V_theta_hat, trans, ...) {
     printCoefmat_args,
     dots[names(dots) %in% names(formals(stats::printCoefmat))]
   )
-  cat("\nParameter Estimates\n")
-  cat("-------------------\n")
+  if (!is.null(title)) {
+    if (!is.character(title) || length(title) != 1) {
+      stop("Argument title must be a length 1 character vector or NULL")
+    }
+    cat("\n", title, "\n", sep = "")
+    cat(rep("-", nchar(title)), "\n", sep = "")
+  }
   if (
     !missing(trans) && is.function(trans) && length(formals(args(trans))) == 1
   ) {
@@ -190,7 +198,7 @@ lmm_optim <- function(objfun, ...) {
   # Scale objective function by inverse of initial value
   control[["fnscale"]] <- objfun[["fn"]](objfun[["par"]])
   if (is.null(control[["factr"]])) {
-    control[["factr"]] <- 1e-10 / .Machine[["double.eps"]]
+    control[["factr"]] <- 0
   }
   if (is.null(control[["pgtol"]])) {
     control[["pgtol"]] <- sqrt(.Machine[["double.eps"]])

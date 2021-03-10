@@ -1,4 +1,4 @@
-library(testthat)
-library(FamModel)
+library(testthat, quietly = TRUE)
+library(FamModel, quietly = TRUE)
 
-test_check("FamModel")
+withr::with_envvar(new = c("R_CMD_CHECK" = "true"), test_check("FamModel"))
