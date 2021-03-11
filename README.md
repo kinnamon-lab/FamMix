@@ -4,6 +4,8 @@
 # FamModel
 
 <!-- badges: start -->
+
+[![R-CMD-check](https://github.com/kinnamon-lab/FamModel/workflows/R-CMD-check/badge.svg?branch=master)](https://github.com/kinnamon-lab/FamModel/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 This package implements regression models for family-based genetic
