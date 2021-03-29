@@ -1,9 +1,8 @@
-#include <TMB.hpp>
-using namespace density;
+#undef TMB_OBJECTIVE_PTR
+#define TMB_OBJECTIVE_PTR obj
 
-template<class Type>
-Type objective_function<Type>::operator() ()
-{
+template <class Type>
+Type sing_asc_lmm(objective_function<Type> * obj) {
   // Data
   DATA_VECTOR(y);
   DATA_MATRIX(X);
@@ -45,7 +44,7 @@ Type objective_function<Type>::operator() ()
     matrix<Type> Sigma_fam = D_fam + R_fam;
     // Add family contribution to loglikelihood. MVNORM returns -log density for
     // multivariate normal
-    nll += MVNORM(Sigma_fam)(r_pop.segment(fidx, f_sizes(i))) +
+    nll += density::MVNORM(Sigma_fam, false)(r_pop.segment(fidx, f_sizes(i))) +
       dnorm(r_pop(f_pr_idx), Type(0.0),
             sqrt(Sigma_fam(f_pr_idx_fam, f_pr_idx_fam)), 1L);
     // Update family index counter
@@ -57,3 +56,6 @@ Type objective_function<Type>::operator() ()
   // Return negative loglikehood
   return(nll);
 }
+
+#undef TMB_OBJECTIVE_PTR
+#define TMB_OBJECTIVE_PTR this

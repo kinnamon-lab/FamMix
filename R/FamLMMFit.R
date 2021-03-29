@@ -474,7 +474,7 @@ FamLMMFit <- R6Class(
             mod_data,
             parameters,
             map = map_list,
-            DLL = "sing_asc_lmm",
+            DLL = "FamModel",
             method = NULL,
             silent = TRUE
           )

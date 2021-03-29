@@ -1,8 +1,8 @@
-all: sing_asc_lmm.so
+all: FamModel.so
 
-sing_asc_lmm.so: sing_asc_lmm.cpp
+FamModel.so: FamModel.cpp sing_asc_lmm.hpp
 	"$(R_HOME)/bin/Rscript" --vanilla \
-		-e "TMB::compile('sing_asc_lmm.cpp', " \
+		-e "TMB::compile('FamModel.cpp', " \
 		-e "safebounds = FALSE, safeunload = FALSE)"
 	rm -f *.o
 clean:

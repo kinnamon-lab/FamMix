@@ -473,6 +473,7 @@ FamData <- R6Class(
         formula <- update(formula, . ~ . | 1)
       }
       mod_data <- private$make_model_mats_lmm(formula)
+      mod_data[["model"]] <- "sing_asc_lmm"
       init_fits <- lm(
         formula(formula, rhs = 1),
         data = private$data[mod_data[["incl_ids"]], on = .(fmid, id)][pr == 0]
@@ -500,7 +501,7 @@ FamData <- R6Class(
       objfun <- TMB::MakeADFun(
         mod_data,
         parameters,
-        DLL = "sing_asc_lmm",
+        DLL = "FamModel",
         method = NULL,
         silent = TRUE
       )

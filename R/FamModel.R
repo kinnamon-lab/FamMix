@@ -7,6 +7,6 @@
 #' @importFrom graphics plot
 #' @importFrom methods as
 #' @importFrom R6 R6Class
-#' @useDynLib sing_asc_lmm
+#' @useDynLib FamModel
 #' @noRd
 NULL
