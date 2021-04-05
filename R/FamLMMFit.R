@@ -244,9 +244,15 @@ FamLMMFit <- R6Class(
           times = lmm_data[["f_sizes"]]
         )
       )
+      # Double cast to ensure sparse symmetric properties are used in all
+      # calculations
+      phi_mat <- as(as(lmm_data[["phi"]], "symmetricMatrix"), "dsCMatrix")
       sigma_mat <- as(
-        2 * (sigma2 * h2_a) %*% lmm_data[["phi"]] + sigma2 - sigma2 * h2_a,
-        "symmetricMatrix"
+        as(
+          2 * (sigma2 * h2_a) %*% phi_mat + sigma2 - sigma2 * h2_a,
+          "symmetricMatrix"
+        ),
+        "dsCMatrix"
       )
 
       # All-subject diagnostics
@@ -274,15 +280,19 @@ FamLMMFit <- R6Class(
             y[pr_mf_idxs] - mu_hat[pr_mf_idxs]
           )
       )
-      omega_mat <- as(
-        sigma_mat[non_pr_mf_idxs, non_pr_mf_idxs] -
-          sigma_mat_non_pr_pr %*%
-          Matrix::solve(
-            sigma_mat_pr_pr,
-            Matrix::t(sigma_mat_non_pr_pr)
-          ),
-        "symmetricMatrix"
+      # Let L_pr_pr refer to the lower Cholesky factor of sigma_mat_pr_pr. Use
+      # of Matrix::crossprod with L_pr_pr^{-1} sigma_mat_non_pr_pr' ensures
+      # result of
+      # sigma_mat_non_pr_pr L_pr_pr^{-1}' L_pr_pr^{-1} sigma_mat_non_pr_pr'
+      # = sigma_mat_non_pr_pr (L_pr_pr L_pr_pr')^{-1} sigma_mat_non_pr_pr'
+      # = sigma_mat_non_pr_pr sigma_mat_pr_pr^{-1} sigma_mat_non_pr_pr'
+      # and omega_mat are recognized as sparse symmetric
+      L_pr_pr_inv_non_pr_pr_t <- Matrix::solve(
+        Matrix::t(Matrix::chol(sigma_mat_pr_pr)),
+        Matrix::t(sigma_mat_non_pr_pr)
       )
+      omega_mat <- sigma_mat[non_pr_mf_idxs, non_pr_mf_idxs] -
+        Matrix::crossprod(L_pr_pr_inv_non_pr_pr_t)
 
       # Conditional and Cholesky residuals
       r_hat <- y[non_pr_mf_idxs] - eta_hat
@@ -292,8 +302,13 @@ FamLMMFit <- R6Class(
       )
 
       # Adaptation of Q* from Hopper and Mattews (1982), referred to here as
-      # r*
-      omega_mat_inv <- as(Matrix::solve(omega_mat), "symmetricMatrix")
+      # r*. Let R_omega_mat denote the upper Cholesky factor of omega_mat.
+      # Calculation of omega_mat^{-1} using R_omega_mat^{-1} and
+      # Matrix::tcrossprod ensures that R_omega_mat^{-1} R_omega_mat^{-1}'
+      # = (R_omega_mat' R_omega_mat)^{-1} = omega_mat^{-1} is recognized as
+      # sparse symmetric
+      R_omega_mat_inv <- Matrix::solve(Matrix::chol(omega_mat))
+      omega_mat_inv <- Matrix::tcrossprod(R_omega_mat_inv)
       T_hat_inv <- 1 / sqrt(Matrix::diag(omega_mat_inv))
       r_star_hat <- as.numeric(
           Matrix::Diagonal(x = T_hat_inv) %*% Matrix::solve(omega_mat, r_hat)

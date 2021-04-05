@@ -329,7 +329,7 @@ FamData <- R6Class(
           )
         }
         # Cast kinship matrix argument to appropriate type
-        phi <- as(args[["phi"]], "symmetricMatrix")
+        phi <- as(as(args[["phi"]], "symmetricMatrix"), "dsCMatrix")
         # Get "id" or "fmid/id" in original sort order from data
         # member. Mimicking behavior of kinship2::kinship, which uses "id"
         # unless it is not unique across families
