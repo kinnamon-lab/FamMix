@@ -6,12 +6,11 @@ Authors@R: person("Daniel D.", "Kinnamon",
     email = "Daniel.Kinnamon@osumc.edu",
     role = c("aut", "cre"),
     comment = c(ORCID = "0000-0002-0867-5227"))
-Description: This package implements regression models for family-based genetic
-    studies, including mixed models. While such models can be fit with other
-    existing software, this package tries to provide a unified solution that
-    leverages the flexibility of the R environment. It also leverages modern
-    automatic differentiation techniques to fit likelihood-based models
-    quickly.
+Description: Implements regression models for family-based genetic studies,
+    including mixed models. While such models can be fit with other existing
+    software, this package tries to provide a unified solution that leverages
+    the flexibility of the R environment. It also leverages modern automatic
+    differentiation techniques to fit likelihood-based models quickly.
 License: MIT + file LICENSE
 Depends:
     R (>= 3.5.0)

@@ -42,8 +42,12 @@ space.
 lmna_data <- copy(lmna_nonseg)[,
   `:=`(
     female = as.integer(sex == 2),
+    # Use N rather than N-1 for SD divisor in standardization (like Mendel 16.0)
     age_echo_std = (age_echo_yrs - mean(age_echo_yrs, na.rm = TRUE)) /
-      sd(age_echo_yrs, na.rm = TRUE)
+      (
+        sd(age_echo_yrs, na.rm = TRUE) *
+          sqrt((sum(!is.na(age_echo_yrs)) - 1) / sum(!is.na(age_echo_yrs)))
+      )
   )
 ]
 lmna_fd <- FamData$new(
@@ -58,7 +62,7 @@ lmna_fd <- FamData$new(
   dzgrp = "dzpair"
 )
 lmna_lvef_model <- lmna_fd$lmm(
-  lvef ~ age_echo_std + female + I(n_lmna_vars > 0) + I(n_oth_vars > 0)
+  lvef ~ female + age_echo_std + I(n_lmna_vars > 0) + I(n_oth_vars > 0)
 )
 lmna_lvef_model$print()
 ```
@@ -66,7 +70,7 @@ lmna_lvef_model$print()
 
     ===LINEAR MIXED MODEL RESULTS===
     DATA: lmna_data
-    MEAN MODEL: lvef ~ age_echo_std + female + I(n_lmna_vars > 0) + I(n_oth_vars > 
+    MEAN MODEL: lvef ~ female + age_echo_std + I(n_lmna_vars > 0) + I(n_oth_vars > 
         0)
     VARIANCE PARAMETER GROUPS: ~1
 
@@ -82,11 +86,11 @@ lmna_lvef_model$print()
     function gradient 
           22       22 
     MESSAGE: CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL
-    MAX ABSOLUTE ELEMENT OF LL GRADIENT (g) AT SOLUTION: 2.111348e-06
+    MAX ABSOLUTE ELEMENT OF LL GRADIENT (g) AT SOLUTION: 2.111349e-06
     NEGATIVE LL HESSIAN (-H) CHARACTERISTICS AT SOLUTION:
-       SMALLEST EIGENVALUE: 2.071145e-02
-       RECIPROCAL CONDITION NUMBER: 2.204369e-03
-    SCALED LL GRADIENT (-g' * H^-1 * g) CRITERION AT SOLUTION: 5.39971e-12
+       SMALLEST EIGENVALUE: 2.071621e-02
+       RECIPROCAL CONDITION NUMBER: 2.204742e-03
+    SCALED LL GRADIENT (-g' * H^-1 * g) CRITERION AT SOLUTION: 5.399669e-12
 
     VARIANCE PARAMETERS
 
@@ -99,18 +103,18 @@ lmna_lvef_model$print()
     Likelihood Ratio Tests
     ----------------------
            Ho      Max |g| -g' * H^-1 * g Min lambda(-H) 1 / kappa(-H)  LR X^2 Pr(> X^2)
-     h2_a = 0 1.788213e-08   1.015742e-15   2.038056e-02  6.473824e-02 0.48601   0.24286
+     h2_a = 0 1.788213e-08   1.015742e-15   2.038201e-02  6.474284e-02 0.48601   0.24286
 
     MEAN MODEL
 
     Parameter Estimates
     -------------------
-                            Estimate        SE   95% LCL   95% UCL Z value  Pr(>|Z|)    
-    (Intercept)             50.64295   5.90382  39.07168  62.21423  8.5780 < 2.2e-16 ***
-    age_echo_std            -5.75982   3.17743 -11.98747   0.46782 -1.8127  0.069873 .  
-    female                   3.40805   5.29036  -6.96087  13.77697  0.6442  0.519446    
-    I(n_lmna_vars > 0)TRUE   3.38145   5.73934  -7.86745  14.63035  0.5892  0.555747    
-    I(n_oth_vars > 0)TRUE  -13.31168   5.15733 -23.41986  -3.20351 -2.5811  0.009848 ** 
+                           Estimate       SE  95% LCL  95% UCL Z value  Pr(>|Z|)    
+    (Intercept)             50.6429   5.9038  39.0717  62.2142  8.5780 < 2.2e-16 ***
+    female                   3.4080   5.2904  -6.9609  13.7770  0.6442  0.519446    
+    age_echo_std            -5.6955   3.1419 -11.8535   0.4626 -1.8127  0.069873 .  
+    I(n_lmna_vars > 0)TRUE   3.3815   5.7393  -7.8674  14.6303  0.5892  0.555747    
+    I(n_oth_vars > 0)TRUE  -13.3117   5.1573 -23.4199  -3.2035 -2.5811  0.009848 ** 
     ---
     Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 

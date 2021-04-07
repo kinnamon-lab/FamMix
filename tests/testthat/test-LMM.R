@@ -3,7 +3,7 @@ library(future.apply, quietly = TRUE)
 library(ggplot2, quietly = TRUE)
 library(vdiffr, quietly = TRUE)
 
-# Note that mendel uses N rather than N-1 for SD divisor in standardization
+# Note that Mendel 16.0 uses N rather than N-1 for SD divisor in standardization
 lmna_data <- copy(lmna_nonseg)[,
   `:=`(
     female = as.integer(sex == 2),

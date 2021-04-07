@@ -49,8 +49,12 @@ heritability on the boundary of the parameter space.
 lmna_data <- copy(lmna_nonseg)[,
   `:=`(
     female = as.integer(sex == 2),
+    # Use N rather than N-1 for SD divisor in standardization (like Mendel 16.0)
     age_echo_std = (age_echo_yrs - mean(age_echo_yrs, na.rm = TRUE)) /
-      sd(age_echo_yrs, na.rm = TRUE)
+      (
+        sd(age_echo_yrs, na.rm = TRUE) *
+          sqrt((sum(!is.na(age_echo_yrs)) - 1) / sum(!is.na(age_echo_yrs)))
+      )
   )
 ]
 lmna_fd <- FamData$new(
@@ -65,7 +69,7 @@ lmna_fd <- FamData$new(
   dzgrp = "dzpair"
 )
 lmna_lvef_model <- lmna_fd$lmm(
-  lvef ~ age_echo_std + female + I(n_lmna_vars > 0) + I(n_oth_vars > 0)
+  lvef ~ female + age_echo_std + I(n_lmna_vars > 0) + I(n_oth_vars > 0)
 )
 lmna_lvef_model$print()
 ```
