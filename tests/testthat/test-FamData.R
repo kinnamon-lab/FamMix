@@ -3,8 +3,6 @@
 test_that("Constructor works properly", {
 
   # Set up testbed with randomly ordered input data set
-  lmna_nonseg_orig <- copy(lmna_nonseg)
-  setkey(lmna_nonseg_orig, family_ID, individual_ID)
   lmna_nonseg_perm <- lmna_nonseg[sample(.N)]
   phi_ids_perm <- lmna_nonseg_perm[, paste(family_ID, individual_ID, sep = "/")]
   fd_sig1 <- FamData$new(
@@ -40,7 +38,16 @@ test_that("Constructor works properly", {
 
   # Data members should be identical to original data set ordered by family_ID,
   # then individual_ID after using the object's var_map member to restore
-  # original column names
+  # original column names and converting all integer columns in original data
+  # set to numeric
+  lmna_nonseg_orig <- copy(lmna_nonseg)
+  is_int_col <- lmna_nonseg_orig[, sapply(.SD, is.integer)]
+  int_cols <- names(is_int_col)[is_int_col]
+  lmna_nonseg_orig[,
+    (int_cols) := lapply(.SD, as.numeric),
+    .SDcols = int_cols
+  ]
+  setkey(lmna_nonseg_orig, family_ID, individual_ID)
   fd_sig1_data <- fd_sig1$get_data()
   fd_sig1_vm <- fd_sig1$get_var_map()
   setnames(fd_sig1_data, names(fd_sig1_vm), fd_sig1_vm)

@@ -83,66 +83,96 @@ FamLMMFit <- R6Class(
         rownames(private$V_theta_hat) <- colnames(private$V_theta_hat) <-
           private$objfun_par_names
         private$lmm_data <- lmm_data <- private$objfun[["env"]]$data
-
-        # Verify that lmm_data rows map to specified IDs in original data member
-        # after trip through MakeADFun(). Need to check:
-        # 1) Row indices i corresponding to probands have incl_ids[i] mapping
-        #    only to probands in the original FamData instance; likewise for
-        #    non-probands
-        # 2) For individual i in lmm_data model input, y[i], X[i, ], phi[i, ],
-        #    and phi[, i] in lmm_data belong to individual incl_ids[i] in the
-        #    original data set
-        incl_ids <- as.data.table(lmm_data[["incl_ids"]])
-        pr_mf_idxs <- lmm_data[["f_pr_idxs"]]
-        non_pr_mf_idxs <- private$get_non_pr_mf_idxs()
-        pr_ids <- incl_ids[pr_mf_idxs]
-        non_pr_ids <- incl_ids[non_pr_mf_idxs]
-        # Verify (1) above
-        orig_data <- private$data$get_data()
-        orig_phi <- private$data$get_phi()
-        if (
-          any(orig_data[pr_ids, pr != 1, on = .(fmid, id)]) ||
-            any(orig_data[non_pr_ids, pr != 0, on = .(fmid, id)])
-        ) {
-          stop(
-            "Proband and non-proband indexes or IDs from objective function ",
-            "are incorrect"
-          )
+        if (lmm_data[["model"]] != "sing_asc_lmm") {
+          stop("TMB model selector variable inappropriate for objfun attribute")
         }
-        # Verify (2) above
-        mm_objfun <- data.table(
+
+        # Verify that lmm_data objects are unaffected by trip through
+        # MakeADFun(). While this is currently the case, this check is included
+        # to guard against future API changes in TMB that might break this
+        # behavior. It also double checks assumptions about ordering required by
+        # the C++ template to prevent inadvertent bugs due to changes in the
+        # FamData data preparation routines. This checks that:
+        # 1) Order of incl_ids remains fmid, then id
+        # 2) y[i] and X[i, ] are named for incl_ids[i] ("fmid/id") and contain
+        #    data for this individual from the original data member
+        # 3) Row j of each family-level object is named for the j^th family in
+        #    incl_ids and contains data for this family from the original data
+        #    member
+        # 4) phi[i, ] and phi[, i] in are named for incl_ids[i] ("fmid/id" or
+        #    "id" as appropriate) and contain data for this individual from the
+        #     original phi member
+        incl_ids <- as.data.table(lmm_data[["incl_ids"]])
+        # Verify (1) above
+        if (!identical(incl_ids, incl_ids[order(fmid, id)])) {
+          stop("Ordering by fmid, then id was not maintained")
+        }
+        # Verify (2) and (3) above for all lmm_data objects other than phi
+        f_pr_idxs <- lmm_data[["f_pr_idxs"]]
+        f_sizes <- lmm_data[["f_sizes"]]
+        f_pops <- lmm_data[["f_pops"]]
+        f_pops_exp <- f_pops[
+          rep(seq(1, nrow(f_pops)), times = f_sizes), , drop = FALSE
+        ]
+        lmm_mm <- data.table(
           incl_ids,
+          id_y = names(lmm_data[["y"]]),
           y = lmm_data[["y"]],
-          lmm_data[["X"]]
+          id_X = rownames(lmm_data[["X"]]),
+          lmm_data[["X"]],
+          fmid_f_sizes = rep(names(f_sizes), times = f_sizes),
+          fmid_f_pops = rownames(f_pops_exp),
+          f_pops_exp,
+          fmid_f_pr_idxs = rep(names(f_pr_idxs), times = f_sizes),
+          f_pr_idxs = rep(f_pr_idxs, times = f_sizes)
         )
-        mf_data <- model.frame(
+        orig_data <- private$data$get_data()
+        orig_mf <- model.frame(
           private$formula,
           orig_data[incl_ids, on = .(fmid, id)][order(fmid, id)],
           fmid = fmid,
-          id = id
+          id = id,
+          pr = pr
         )
-        mm_data <- data.table(
-          fmid = mf_data[["(fmid)"]],
-          id = mf_data[["(id)"]],
-          y = model.response(mf_data),
-          model.matrix(private$formula, mf_data)
-        )
-        if (!isTRUE(all.equal(mm_objfun, mm_data))) {
+        orig_mm <- data.table(
+          fmid = orig_mf[["(fmid)"]],
+          id = orig_mf[["(id)"]],
+          id_y = paste(orig_mf[["(fmid)"]], orig_mf[["(id)"]], sep = "/"),
+          y = model.response(orig_mf),
+          id_X = paste(orig_mf[["(fmid)"]], orig_mf[["(id)"]], sep = "/"),
+          model.matrix(private$formula, orig_mf, rhs = 1),
+          fmid_f_sizes = orig_mf[["(fmid)"]],
+          fmid_f_pops = orig_mf[["(fmid)"]],
+          model.matrix(private$formula, orig_mf, rhs = 2),
+          fmid_f_pr_idxs = orig_mf[["(fmid)"]],
+          pr = orig_mf[["(pr)"]]
+        )[,
+          # NOTE: TMB converts integer numeric to double storage class in
+          # MakeADFun; must reproduce here for correct comparison
+          f_pr_idxs := as.numeric(.I[pr == 1]),
+          by = fmid
+        ][, pr := NULL][order(fmid, id)]
+        if (!identical(orig_mm, lmm_mm)) {
           stop(
-            "y[i] and X[i, ] in objfun data do not belong to individual ",
-            "incl_ids[i] in the original data set for all i"
+            "Data objects in MakeADFun object were reordered or modified; ",
+            "results are not reliable. Please report this error in a GitHub ",
+            "issue"
           )
         }
+        # Verify (4) above
+        orig_phi <- private$data$get_phi()
         incl_phi_ids <-
           if (!anyDuplicated(orig_data[, id])) {
             incl_ids[, as.character(id)]
           } else {
             incl_ids[, paste(fmid, id, sep = "/")]
           }
-        if (!isTRUE(all.equal(
+        if (!identical(
+          # NOTE: TMB converts sparseMatrix objects to dgTMatrix in MakeADFun;
+          # must convert back to dsCMatrix for correct comparison
           as(as(lmm_data[["phi"]], "symmetricMatrix"), "dsCMatrix"),
           orig_phi[incl_phi_ids, incl_phi_ids]
-        ))) {
+        )) {
           stop(
             "phi[i, ] and  phi[, i] in objfun data do not belong to ",
             "individual incl_ids[i] in the original phi matrix for all i"
@@ -256,7 +286,7 @@ FamLMMFit <- R6Class(
       )
 
       # All-subject diagnostics
-      y <- lmm_data[["y"]]
+      y <- unname(lmm_data[["y"]])
       mu_hat <- as.numeric(lmm_data[["X"]] %*% private$theta_hat[beta_parms])
       if (!isTRUE(all.equal(mu_hat, objfun_report[["X_beta"]]))) {
         stop("Mismatch in mu_hat between C++ and R code")

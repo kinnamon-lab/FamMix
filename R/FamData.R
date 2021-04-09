@@ -101,7 +101,7 @@ FamData <- R6Class(
           dzid = args[["dzgrp"]]
         )
         # Populate data member, rename to standard variable names for use
-        # within FamData object, and sort by fmid, then id
+        # within FamData object
         private$data <- if (is.data.table(data)) {
           copy(data)
         } else {
@@ -112,6 +112,17 @@ FamData <- R6Class(
           old = private$var_map,
           new = names(private$var_map)
         )
+        # Change all integer-type numeric columns to double (i.e., standard
+        # numeric)
+        is_int_col <- private$data[, sapply(.SD, is.integer)]
+        if (any(is_int_col)) {
+          int_cols <- names(is_int_col)[is_int_col]
+          private$data[,
+            (int_cols) := lapply(.SD, as.numeric),
+            .SDcols = int_cols
+          ]
+        }
+        # Sort by fmid, then id
         setkey(private$data, fmid, id)
         # Make sure that there is only one row per individual within each fmid
         if (anyDuplicated(private$data[, .(fmid, id)])) {
@@ -248,20 +259,20 @@ FamData <- R6Class(
         # unique across families, in which case it uses "fmid/id"
         if (
           !(
-            isTRUE(all.equal(
+            identical(
               private$data[, as.character(id)], rownames(private$phi)
-            )) &&
-            isTRUE(all.equal(
+            ) &&
+            identical(
               private$data[, as.character(id)], colnames(private$phi)
-            ))
+            )
           ) &&
           !(
-            isTRUE(all.equal(
+            identical(
               private$data[,  paste(fmid, id, sep = "/")], rownames(private$phi)
-            )) &&
-            isTRUE(all.equal(
+            ) &&
+            identical(
               private$data[,  paste(fmid, id, sep = "/")], colnames(private$phi)
-            ))
+            )
           )
         ) {
           stop("Subject order in phi matrix does not match data member")
@@ -295,6 +306,16 @@ FamData <- R6Class(
           old = private$var_map,
           new = names(private$var_map)
         )
+        # Change all integer-type numeric columns to double (i.e., standard
+        # numeric)
+        is_int_col <- private$data[, sapply(.SD, is.integer)]
+        if (any(is_int_col)) {
+          int_cols <- names(is_int_col)[is_int_col]
+          private$data[,
+            (int_cols) := lapply(.SD, as.numeric),
+            .SDcols = int_cols
+          ]
+        }
         # Check variables
         if (
           !is.numeric(private$data[, fmid]) &
@@ -572,22 +593,25 @@ FamData <- R6Class(
       # Check that selection of observations has maintained original sort order
       # of data member, which is ascending fmid, then ascending id
       if (
-        !isTRUE(all.equal(
+        !identical(
           order(mf[["(fmid)"]], mf[["(id)"]]),
           seq(1, nrow(mf))
-        ))
+        )
       ) {
         stop("Model frame not ordered by ascending fmid, then ascending id")
       }
       incl_ids <- mf[, c("(fmid)", "(id)")]
       names(incl_ids) <- c("fmid", "id")
+      incl_ids_char <- with(mf, paste(`(fmid)`, `(id)`, sep = "/"))
       incl_phi_ids <- if (private$unique_id) {
         with(mf, as.character(`(id)`))
       } else {
-        with(mf, paste(`(fmid)`, `(id)`, sep = "/"))
+        incl_ids_char
       }
       y <- as.numeric(model.response(mf))
+      names(y) <- incl_ids_char
       X <- model.matrix(formula, mf, rhs = 1)
+      rownames(X) <- incl_ids_char
       pops <- model.matrix(formula, mf, rhs = 2)
       if (any(apply(pops, 1, sum) != 1)) {
         stop(
