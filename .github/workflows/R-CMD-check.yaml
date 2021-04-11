@@ -41,6 +41,11 @@ jobs:
 
       - uses: r-lib/actions/setup-pandoc@v1
 
+      - uses: r-lib/actions/setup-tinytex@6b42208f233d72d4a2cf2705b68a512154bb3f1a
+
+      - name: Install additional LaTeX packages
+        run: tlmgr install makeindex psnfss
+
       - name: Query dependencies
         run: |
           install.packages('remotes')
