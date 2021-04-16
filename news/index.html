@@ -71,7 +71,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">FamModel</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.2.0.9000</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.0</span>
       </span>
     </div>
 
@@ -103,7 +103,12 @@
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
-        
+        <li>
+  <a href="https://github.com/kinnamon-lab/FamModel/">
+    <span class="fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
       </ul>
       
     </div><!--/.nav-collapse -->
@@ -118,9 +123,86 @@
   <div class="col-md-9 contents">
     <div class="page-header">
       <h1 data-toc-skip>Changelog <small></small></h1>
-      
+      <small>Source: <a href='https://github.com/kinnamon-lab/FamModel/blob/master/NEWS.md'><code>NEWS.md</code></a></small>
     </div>
 
+    <div id="fammodel-100" class="section level1">
+<h1 class="page-header" data-toc-text="1.0.0">
+<a href="#fammodel-100" class="anchor"></a>FamModel 1.0.0</h1>
+<div id="r-code-changes-and-improvements" class="section level2">
+<h2 class="hasAnchor">
+<a href="#r-code-changes-and-improvements" class="anchor"></a>R code changes and improvements</h2>
+<div id="contrast-class" class="section level3">
+<h3 class="hasAnchor">
+<a href="#contrast-class" class="anchor"></a><code>Contrast</code> class</h3>
+<ul>
+<li>Changed to store estimate of <span class="math inline"><em>L</em><em>θ</em> − <em>m</em></span> rather than <span class="math inline"><em>L</em><em>θ</em></span>.</li>
+<li>Changed chi-square df calculation to use rank of <span class="math inline"><em>L</em></span> rather than number of rows.</li>
+<li>Improved output from <code>print</code> method.</li>
+</ul>
+</div>
+<div id="famdata-class" class="section level3">
+<h3 class="hasAnchor">
+<a href="#famdata-class" class="anchor"></a><code>FamData</code> class</h3>
+<ul>
+<li>Added checks to constructor to make sure that individual order and identifiers are identical in <code>data</code> and <code>phi</code> members.</li>
+<li>Added pedigree check to constructor.</li>
+<li>Converted all integer storage type numeric columns in input data set to double storage type to avoid later comparison errors with <code><a href="https://rdrr.io/r/base/identical.html">identical()</a></code>.</li>
+<li>Added identification of families with consanguinity and <code>get_consang</code> method.</li>
+<li>Modified <code>get_data</code> method to return copy of <code>data</code> member to avoid inadvertent modification by reference.</li>
+<li>Added <code>print</code> method.</li>
+<li>Modified <code>make_model_mats_lmm</code> to track included observations from data member by <code>fmid</code> and <code>id</code> and include these identifiers as names or row names to increase robustness.</li>
+<li>Modified <code>lmm</code> method to use only non-probands in <code><a href="https://rdrr.io/r/stats/lm.html">lm()</a></code> fit used to obtain initial parameter estimates for optimization.</li>
+</ul>
+</div>
+<div id="famlmmfit-subclass" class="section level3">
+<h3 class="hasAnchor">
+<a href="#famlmmfit-subclass" class="anchor"></a><code>FamLMMFit</code> subclass</h3>
+<ul>
+<li>Disallowed construction outside of internal <code>FamModel</code> methods and functions.</li>
+<li>Made sure that analytical, not numeric, Hessian was being used in covariance matrix calculation.</li>
+<li>Added data mapping checks to constructor to protect against bugs due to future API changes and ensure accurate diagnostic output.</li>
+<li>Added <code>get_model_res</code> method with additional diagnostic features.</li>
+<li>Added scaled gradient convergence criterion and negative Hessian diagnostics to <code>print</code> and <code>get_h2_a_lrts</code> methods.</li>
+<li>Modified <code>get_h2_a_lrts</code> to cache heritability LRT results after first call and use cached values on subsequent calls unless the user explicitly overrides.</li>
+</ul>
+</div>
+<div id="other" class="section level3">
+<h3 class="hasAnchor">
+<a href="#other" class="anchor"></a>Other</h3>
+<ul>
+<li>Moved common LMM optimization code to utility function and switched optimization to use <code><a href="https://rdrr.io/r/stats/optim.html">optim()</a></code> without relative function convergence criterion.</li>
+<li>Switched from variance to SD paramaterization for linear mixed model to improve scaling properties of optimization problem.</li>
+<li>Added rigorous argument checks to <code><a href="../reference/make_coef_mat.html">make_coef_mat()</a></code> and <code><a href="../reference/print_ests.html">print_ests()</a></code>.</li>
+<li>Added title argument to <code><a href="../reference/print_ests.html">print_ests()</a></code>.</li>
+<li>Replaced <code><a href="https://rdrr.io/r/base/all.equal.html">all.equal()</a></code> with <code><a href="https://rdrr.io/r/base/identical.html">identical()</a></code> for all object comparisons where floating point imprecision should not be an issue.</li>
+</ul>
+</div>
+</div>
+<div id="c-template-infrastructure-changes" class="section level2">
+<h2 class="hasAnchor">
+<a href="#c-template-infrastructure-changes" class="anchor"></a>C++ template infrastructure changes</h2>
+<ul>
+<li>Fixed bug in <code>sing_asc_lmm</code> model that would yield misspecified trait variance for inbred individuals.</li>
+<li>Moved diagnostic calculations, which are not necessary for optimization, to <code>FamLMMFit$get_model_res()</code> method to speed up iterations.</li>
+<li>Transitioned to shared library with same name as package to avoid issues with newer <code>pkgload</code> versions during development.</li>
+<li>Refactored to allow easy incorporation of multiple models into a single shared library as per <a href="https://github.com/mlysy/TMBtools" class="uri">https://github.com/mlysy/TMBtools</a>.</li>
+</ul>
+</div>
+<div id="documentation-changes" class="section level2">
+<h2 class="hasAnchor">
+<a href="#documentation-changes" class="anchor"></a>Documentation changes</h2>
+<ul>
+<li>Added <code><a href="../articles/linear_mixed_models.html">vignette("linear_mixed_models")</a></code>.
+<ul>
+<li>Moved methodological details from individual class and method documentation to vignette.</li>
+<li>Discussed conditions required for valid inferences when true values fall on boundaries of the parameter space.</li>
+<li>Discussed properties of estimated residuals and diagnostics relevant to assessing goodness of fit.</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
     <div id="fammodel-020" class="section level1">
 <h1 class="page-header" data-toc-text="0.2.0">
 <a href="#fammodel-020" class="anchor"></a>FamModel 0.2.0</h1>
