@@ -1,7 +1,7 @@
 Package: FamModel
 Type: Package
 Title: Regression Modeling for Family-Based Genetic Studies
-Version: 0.2.0.9000
+Version: 1.0.0
 Authors@R: person("Daniel D.", "Kinnamon",
     email = "Daniel.Kinnamon@osumc.edu",
     role = c("aut", "cre"),
@@ -12,6 +12,9 @@ Description: Implements regression models for family-based genetic studies,
     the flexibility of the R environment. It also leverages modern automatic
     differentiation techniques to fit likelihood-based models quickly.
 License: MIT + file LICENSE
+URL: https://kinnamon-lab.github.io/FamModel,
+     https://github.com/kinnamon-lab/FamModel
+BugReports: https://github.com/kinnamon-lab/FamModel/issues
 Depends:
     R (>= 3.5.0)
 Imports:

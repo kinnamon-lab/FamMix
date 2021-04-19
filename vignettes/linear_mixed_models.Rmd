@@ -12,17 +12,15 @@ vignette: >
 
 ## Introduction
 
-Linear mixed models can be fit by the
-[`FamData$lmm()`](../reference/FamData.html#method-lmm) method, which produces a
-[`FamLMMFit`](../reference/FamLMMFit.html) object inheriting from the class
-[`FamModelFit`](../reference/FamModelFit.html). These models assume the standard
-multivariate normal measured genotype model [@boerwinkle1986; @lange2002] holds
-for each family in the population. The current implementation of the model
-assumes an additive polygenic effect, parameterized in terms of heritability,
-and no shared environmental effect. The heritability and total variance can be
-allowed to vary across groups of families, but, within each group, all founders
-in the family are assumed to be drawn from the same randomly mating
-population. The current implementation assumes that each family has been
+Linear mixed models can be fit by the `FamData$lmm()` method, which produces a
+`FamLMMFit` object inheriting from the class `FamModelFit`. These models assume
+the standard multivariate normal measured genotype model [@boerwinkle1986;
+@lange2002] holds for each family in the population. The current implementation
+of the model assumes an additive polygenic effect, parameterized in terms of
+heritability, and no shared environmental effect. The heritability and total
+variance can be allowed to vary across groups of families, but, within each
+group, all founders in the family are assumed to be drawn from the same randomly
+mating population. The current implementation assumes that each family has been
 ascertained through a single proband meeting certain criteria, in which case the
 appropriate multivariate normal likelihood conditions on the observed data in
 the proband [see @hopper1982; @beaty1987]. Families without probands or more
@@ -163,21 +161,20 @@ the objective function between iterations (i.e., `factr = 0` in
 `optim()`). These tolerances, but not scaling choices, can be overriden by the
 user.
 
-The [`FamLMMFit$print()`](../reference/FamLMMFit.html#method-print) method
-provides optimization diagnostics, including the covergence status and message
-from `optim()`. To identify potential issues with conditioning that might affect
-optimization or covariance matrix estimation, the smallest eigenvalue and
-recpirocal condition number of $-H(\hat{\theta})$ at the solution $\hat{\theta}$
-are provided. Convergence measures are also provided, including the maximum
-absolute element of the loglikelihood gradient at the solution, $\lVert
-g(\hat{\theta}) \rVert_\infty$, and the scaled gradient criterion
-$-g(\hat{\theta})^{'} H(\hat{\theta})^{-1} g(\hat{\theta})$ recommended by
-@belsley1980. The first of these is not invariant to parameter scaling, and both
-of these may differ substantially from zero when the solution is on the boundary
-for one or more parameters. However, it is worth noting that the maximum
-absolute _projected_ gradient element is still $<\sqrt{\epsilon}$ under these
-circumstances if the output indicates that this convergence criterion was
-satisfied.
+The `FamLMMFit$print()` method provides optimization diagnostics, including the
+covergence status and message from `optim()`. To identify potential issues with
+conditioning that might affect optimization or covariance matrix estimation, the
+smallest eigenvalue and recpirocal condition number of $-H(\hat{\theta})$ at the
+solution $\hat{\theta}$ are provided. Convergence measures are also provided,
+including the maximum absolute element of the loglikelihood gradient at the
+solution, $\lVert g(\hat{\theta}) \rVert_\infty$, and the scaled gradient
+criterion $-g(\hat{\theta})^{'} H(\hat{\theta})^{-1} g(\hat{\theta})$
+recommended by @belsley1980. The first of these is not invariant to parameter
+scaling, and both of these may differ substantially from zero when the solution
+is on the boundary for one or more parameters. However, it is worth noting that
+the maximum absolute _projected_ gradient element is still $<\sqrt{\epsilon}$
+under these circumstances if the output indicates that this convergence
+criterion was satisfied.
 
 ## Inference
 
@@ -308,17 +305,14 @@ is obtained from the observed information as $\hat{V}(\hat{\theta}) =
 -H(\hat{\theta})^{-1}$, which is equivalent to estimating
 $\bar{I}\left(\theta_{0}\right)$ by $-N^{-1} H(\hat{\theta})$.  Wald tests and
 confidence intervals using the standard normal distribution are produced for the
-$\beta$ parameters by the
-[`FamLMMFit$print()`](../reference/FamLMMFit.html#method-print) method, and Wald
-tests and confidence intervals for general linear contrasts of the form
-$L\theta - m = 0$ can be obtained with the inherited
-[`FamLMMFit$contrast()`](../reference/FamModelFit.html#method-contrast) method,
-which produces a [`Contrast`](../reference/Contrast.html) object. Wald tests and
-confidence intervals for each row of $L\theta - m$ are calculated using the
-standard normal distribution, and an overall Wald chi-square test of the null
-hypothesis $L\theta - m = 0$ with df equal to $\mathrm{rank}(L)$ are
-provided. These results can be displayed with the
-[`Contrast$print()`](../reference/Contrast.html#method-print) method.
+$\beta$ parameters by the `FamLMMFit$print()` method, and Wald tests and
+confidence intervals for general linear contrasts of the form $L\theta - m = 0$
+can be obtained with the inherited `FamLMMFit$contrast()` method, which produces
+a `Contrast` object. Wald tests and confidence intervals for each row of
+$L\theta - m$ are calculated using the standard normal distribution, and an
+overall Wald chi-square test of the null hypothesis $L\theta - m = 0$ with df
+equal to $\mathrm{rank}(L)$ are provided. These results can be displayed with
+the `Contrast$print()` method.
 
 We now consider the validity of the likelihood ratio tests that each $h^2_{a,
 q_i} = 0$. Consider testing the null that one component of $\theta_1$ is the
@@ -379,20 +373,16 @@ long as all parameters that are not orthogonal to $h^2_{a, q_i}$ have true
 values in the interior of the parameter space.
 
 Likelihood ratio tests that each $h^2_{a, q_i} = 0$ are performed automatically
-on the first call to the
-[`FamLMMFit$print()`](../reference/FamLMMFit.html#method-print), which calls the
-[`FamLMMFit$get_h2_a_lrts()`](../reference/FamLMMFit.html#method-get_h2_a_lrts)
-method. The latter method can also be called directly to obtain printed output
-and/or a `data.table` for further manipulation. The same Hessian and convergence
-diagnostics described above are supplied for each constrained maximization under
-the null. The p-value for the likelihood ratio statistic is calculated from the
-appropriate mixture as $\frac{1}{2}1[T_{LR} = 0] +
-\frac{1}{2}\mathrm{Pr}\left(\chi^2_1 \geq T_{LR}\right)$. After the first call
-to
-[`FamLMMFit$get_h2_a_lrts()`](../reference/FamLMMFit.html#method-get_h2_a_lrts),
-the likelihood ratio test results are cached in the
-[`FamLMMFit`](../reference/FamLMMFit.html) object to avoid redundant
-evaluations.
+on the first call to the `FamLMMFit$print()`, which calls the
+`FamLMMFit$get_h2_a_lrts()` method. The latter method can also be called
+directly to obtain printed output and/or a `data.table` for further
+manipulation. The same Hessian and convergence diagnostics described above are
+supplied for each constrained maximization under the null. The p-value for the
+likelihood ratio statistic is calculated from the appropriate mixture as
+$\frac{1}{2}1[T_{LR} = 0] + \frac{1}{2}\mathrm{Pr}\left(\chi^2_1 \geq
+T_{LR}\right)$. After the first call to `FamLMMFit$get_h2_a_lrts()`, the
+likelihood ratio test results are cached in the `FamLMMFit` object to avoid
+redundant evaluations.
 
 Whether the assumptions required for valid Wald and likelihood ratio inference
 are tenable depends to a large degree on model parameterization. For example, if
@@ -419,9 +409,7 @@ q_i} > 0$ for true $h^2_{a, q_i} = 0$ in finite samples.
 
 A `data.table` containing individual observations along with a full complement
 of residuals and diagnostics described in greater detail below can be obtained
-using the
-[`FamLMMFit$get_model_res()`](../reference/FamLMMFit.html#method-get_model_res)
-method.
+using the `FamLMMFit$get_model_res()` method.
 
 Regarding $\{y_{i j_i}, \mathbf{X}_i, q_i, \Phi_i\}$ as fixed, each of the
 residuals and diagnostics described below can be defined by a family-specific,
